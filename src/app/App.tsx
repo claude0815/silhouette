@@ -1,6 +1,7 @@
 import { t } from '../i18n/de';
 import { Ablage, Schritt1, Schritt2, Schritt3, Schritt4 } from './schritte/RasterSchritte';
 import { Simulation } from './schritte/SimulationSchritt';
+import { Kopfzeilenstatus, Schneiden } from './schneiden/Schneiden';
 import { useEffect, useState } from 'preact/hooks';
 import type { ComponentType } from 'preact';
 import { Schritt5, Schritt6, Schritt7, Schritt8 } from './schritte/VektorSchritte';
@@ -53,7 +54,7 @@ function Start() {
 function Bereichsleiste() {
   return (
     <nav class="bereichsleiste" aria-label="Bereiche">
-      {(['nachzeichnen', 'werkstatt', 'simulation'] as const).map((b) => (
+      {(['nachzeichnen', 'werkstatt', 'simulation', 'schneiden'] as const).map((b) => (
         <button
           class={`bereich-knopf ${bereich.value === b && !zeigeUeber.value ? 'aktiv' : ''}`}
           onClick={() => {
@@ -84,6 +85,7 @@ function Inhalt() {
   if (zeigeUeber.value) return <Ueber zurueck={() => (zeigeUeber.value = false)} />;
   if (bereich.value === 'werkstatt') return <WerkstattLaden />;
   if (bereich.value === 'simulation') return <Simulation />;
+  if (bereich.value === 'schneiden') return <Schneiden />;
   const Ansicht = ANSICHTEN[schritt.value - 1]!;
   return geladen.value ? <Ansicht /> : <Start />;
 }
@@ -97,6 +99,7 @@ export function App() {
         {bereich.value === 'nachzeichnen' && <Schrittleiste />}
         <div class="status" aria-live="polite">
           {rechnet.value && <span class="rechnet">{tx.rechnet}</span>}
+          <Kopfzeilenstatus />
         </div>
       </header>
       {fehler.value && (

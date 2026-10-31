@@ -164,3 +164,17 @@ Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon n
 2. Material-Voreinstellungen mit Ausgangswerten aus inkscape-silhouette (dort für ältere Modelle ermittelt), deutlich als Schätzwert gekennzeichnet; eigene Voreinstellungen speicherbar.
 3. Bereich „Schneiden“: Verbindung per USB, Bluetooth oder Simulation, Gerätename und Status gut sichtbar (auch in der Kopfzeile), regelmäßige Statusabfrage, Testfahrt, Mattenvorschau mit Warnungen, Reihenfolge und Kennzahlen, Senden mit Fortschritt, großer Abbrechen-Knopf, Hinweise (Stift zuerst, Studio schließen, Windows).
 4. Was der Machbarkeitstest liefern muss: Material-Werte, Reaktion auf Abbruch, Geschwindigkeit je Stufe (für die Dauerschätzung), ob die AutoBlade-Tiefe gesetzt werden soll, Bluetooth-Verhalten je Modell.
+
+**Stand der Vorbereitung**
+
+- ✅ Treiber: Warteschlange für alle Zugriffe, `sendeBefehle`, Testfahrt ohne Schnitt, AutoBlade-Tiefe `TF` (nur Messer, nur Halter 1).
+- ✅ Voreinstellungen (`src/cutter/voreinstellungen.ts`): Stift, Papier leicht/mittel, Tonkarton, Vinyl, Aufkleberpapier – alle als Schätzwert mit Quelle; eigene Voreinstellungen im Browser.
+- ✅ Bereich „Schneiden“: Verbindung (USB, Bluetooth, Simulation), Status in Seitenleiste und Kopfzeile (auch „arbeitet …“), Statusabfrage alle 3 s, Testfahrt, Mattenvorschau mit Einzugskante und roten Pfaden außerhalb, Reihenfolge, Kennzahlen, Rückfrage vor dem ersten Messerschnitt, Abbrechen, Zurücksetzen, Protokoll, Hinweise.
+- ✅ Checkliste der Testseite um drei Punkte für Stufe 3 ergänzt.
+
+**Nach dem Machbarkeitstest eintragen**
+
+- Gemessene Werte in `VOREINSTELLUNGEN` eintragen, `geprueft: true` setzen.
+- Geschwindigkeit je Stufe in `zeitannahmen()` (`src/simulation/fahrten.ts`).
+- Text zur Reaktion auf Abbruch (`abbruchTipp` in `de.ts`) an das tatsächliche Verhalten anpassen.
+- Bluetooth: Modelle ohne BLE in `docs/protokoll.md` vermerken; Einzugsrichtung der Matte bestätigen.

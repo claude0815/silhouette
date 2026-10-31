@@ -974,3 +974,138 @@
   color: #15803d;
   font-weight: 600;
 }
+
+/* ---- Schneiden ---- */
+.schneiden {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  height: 100%;
+  min-height: 0;
+}
+.schneiden-haupt {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #e2e8f0;
+}
+.matten-flaeche {
+  padding: 1rem;
+}
+.matten-flaeche svg {
+  width: 100%;
+  max-height: calc(100vh - 140px);
+}
+.matte {
+  fill: #e0f2f1;
+  stroke: #0f766e;
+  stroke-width: 0.6;
+}
+.matte-raster {
+  stroke: #99d5cf;
+  stroke-width: 0.25;
+}
+.schneidebereich {
+  fill: none;
+  stroke: #0f766e;
+  stroke-width: 0.5;
+  stroke-dasharray: 3 2;
+}
+.einzug {
+  stroke: #0f172a;
+  stroke-width: 0.8;
+}
+.einzug-spitze {
+  fill: #0f172a;
+}
+.einzug-text {
+  font-size: 6px;
+  fill: #0f172a;
+  font-family: system-ui, sans-serif;
+}
+.matte-pfad {
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+.matte-pfad.draussen {
+  stroke: #dc2626;
+  stroke-width: 0.9;
+}
+.matte-start {
+  fill: #16a34a;
+}
+.geraet-status {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  background: #f1f5f9;
+  border-left: 5px solid #94a3b8;
+  margin-bottom: 0.5rem;
+}
+.geraet-status.bereit {
+  border-left-color: #16a34a;
+}
+.geraet-status.in-bewegung {
+  border-left-color: #f59e0b;
+}
+.geraet-status.keine-matte {
+  border-left-color: #dc2626;
+}
+.kopf-status {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.kopf-status.bereit {
+  color: #86efac;
+}
+.kopf-status.in-bewegung {
+  color: #fcd34d;
+}
+.kopf-status.keine-matte {
+  color: #fca5a5;
+}
+.sende-knoepfe {
+  display: flex;
+  gap: 0.5rem;
+}
+.schneiden-knopf {
+  flex: 1;
+  background: #0f766e;
+  border-color: #115e59;
+  color: #fff;
+  font-weight: bold;
+  padding: 0.6rem 1rem;
+}
+.sende-knoepfe .abbrechen {
+  flex: 1;
+}
+.meldung {
+  border-left: 4px solid #64748b;
+  background: #f1f5f9;
+  padding: 0.4rem 0.6rem;
+  margin: 0.5rem 0;
+}
+.meldung.fehler {
+  border-left-color: #b91c1c;
+  background: #fef2f2;
+}
+.meldung.erfolg {
+  border-left-color: #15803d;
+  background: #f0fdf4;
+}
+.meldung p {
+  margin: 0.25rem 0 0;
+}
+.seite pre.protokoll {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  max-height: 240px;
+  overflow: auto;
+  padding: 0.5rem;
+}
