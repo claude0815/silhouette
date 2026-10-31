@@ -642,3 +642,22 @@
   padding: 0.3rem 0.5rem;
   vertical-align: top;
 }
+
+/* ---- Bereiche ---- */
+.bereichsleiste {
+  display: flex;
+  gap: 0.25rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid #334155;
+}
+.bereich-knopf {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bereich-knopf.aktiv {
+  background: #f8fafc;
+  color: #0f172a;
+}

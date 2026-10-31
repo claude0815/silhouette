@@ -1,5 +1,5 @@
 /**
- * Schritt 9: Schnitt-Simulation. Liest das SVG-Dokument, ordnet die Pfade, übersetzt sie
+ * Bereich Simulation. Liest das zentrale SVG-Dokument, ordnet die Pfade, übersetzt sie
  * mit derselben reinen Funktion wie für den echten Cutter in GPGL-Befehle und spielt
  * diese Befehle ab.
  */
@@ -12,7 +12,7 @@ import { formatiereDauer, formatiereLaenge, t } from '../../i18n/de';
 import { befehleZuFahrten, kennzahlen, zeitannahmen, zeitplan, zustandZurZeit, type Fahrt } from '../../simulation/fahrten';
 import { aussenZuFrueh, ordne, REIHENFOLGEN, type Reihenfolge } from '../../simulation/reihenfolge';
 import { leseSvg, svgZuPolylinien } from '../../svg/dokument';
-import { ergebnis } from '../zustand';
+import { dokument } from '../dokument';
 import { Erklaerung, Kasten, Regler, Schrittansicht, vieleckD } from './Bausteine';
 
 const tx = t.app.simulation;
@@ -52,8 +52,8 @@ function fahrtenD(fahrten: readonly Fahrt[], art: Fahrt['art']): string {
   return d;
 }
 
-export function Schritt9() {
-  const text = ergebnis.value?.svg?.text ?? '';
+export function Simulation() {
+  const text = dokument.value.text;
   const pfade = useMemo(() => svgZuPolylinien(leseSvg(text)) as Punkt[][], [text]);
   const profilIndex = Math.max(0, profile.findIndex((p) => p.id === profilId.value));
   const profil = profile[profilIndex]!;

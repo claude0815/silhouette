@@ -48,8 +48,12 @@ export const de = {
       'Vereinfachen',
       'Glätten',
       'SVG erzeugen',
-      'Simulation',
     ],
+    bereiche: {
+      nachzeichnen: 'Nachzeichnen',
+      werkstatt: 'SVG-Werkstatt',
+      simulation: 'Simulation',
+    },
 
     laden: {
       ziehen: 'Bild hierher ziehen (PNG oder JPG)',
@@ -202,7 +206,7 @@ export const de = {
         `${n} ${n === 1 ? 'Außenkontur wird' : 'Außenkonturen werden'} vor den Löchern darin geschnitten. Das Teil kann sich lösen, bevor ein Loch fertig ist.`,
       befehle: 'Plotterbefehle',
       befehlInfo: (i: number, n: number) => `Befehl ${i} von ${n}`,
-      keinSvg: 'Noch kein SVG: zuerst ein Bild laden.',
+      keinSvg: 'Das Dokument ist leer. In der SVG-Werkstatt etwas zeichnen oder ein Bild nachzeichnen.',
       legendeSchnitt: 'Schnitt',
       legendeLeer: 'Leerfahrt',
       legendeStart: 'Startpunkt und Richtung',

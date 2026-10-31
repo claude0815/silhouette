@@ -1,6 +1,7 @@
 import { t } from '../i18n/de';
 import { Ablage, Schritt1, Schritt2, Schritt3, Schritt4 } from './schritte/RasterSchritte';
-import { Schritt9 } from './schritte/SimulationSchritt';
+import { Simulation } from './schritte/SimulationSchritt';
+import { Werkstatt } from './werkstatt/Werkstatt';
 import { Schritt5, Schritt6, Schritt7, Schritt8 } from './schritte/VektorSchritte';
 import { signal } from '@preact/signals';
 import { Ueber } from './Ueber';
@@ -10,7 +11,10 @@ import { ergebnis, fehler, geladen, rechnet, schritt } from './zustand';
 const zeigeUeber = signal(typeof location !== 'undefined' && location.hash === '#ueber');
 
 const tx = t.app;
-const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8, Schritt9];
+const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8];
+
+export type Bereich = 'nachzeichnen' | 'werkstatt' | 'simulation';
+export const bereich = signal<Bereich>('nachzeichnen');
 
 function Schrittleiste() {
   const zeiten = ergebnis.value?.zeiten ?? {};
@@ -48,13 +52,39 @@ function Start() {
   );
 }
 
-export function App() {
+function Bereichsleiste() {
+  return (
+    <nav class="bereichsleiste" aria-label="Bereiche">
+      {(['nachzeichnen', 'werkstatt', 'simulation'] as const).map((b) => (
+        <button
+          class={`bereich-knopf ${bereich.value === b && !zeigeUeber.value ? 'aktiv' : ''}`}
+          onClick={() => {
+            bereich.value = b;
+            zeigeUeber.value = false;
+          }}
+        >
+          {tx.bereiche[b]}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function Inhalt() {
+  if (zeigeUeber.value) return <Ueber zurueck={() => (zeigeUeber.value = false)} />;
+  if (bereich.value === 'werkstatt') return <Werkstatt />;
+  if (bereich.value === 'simulation') return <Simulation />;
   const Ansicht = ANSICHTEN[schritt.value - 1]!;
+  return geladen.value ? <Ansicht /> : <Start />;
+}
+
+export function App() {
   return (
     <div class="app">
       <header class="kopf">
         <h1>{tx.titel}</h1>
-        <Schrittleiste />
+        <Bereichsleiste />
+        {bereich.value === 'nachzeichnen' && <Schrittleiste />}
         <div class="status" aria-live="polite">
           {rechnet.value && <span class="rechnet">{tx.rechnet}</span>}
         </div>
@@ -65,7 +95,7 @@ export function App() {
         </p>
       )}
       <main class="inhalt">
-        {zeigeUeber.value ? <Ueber zurueck={() => (zeigeUeber.value = false)} /> : geladen.value ? <Ansicht /> : <Start />}
+        <Inhalt />
       </main>
       <footer class="fuss klein">
         <a href="./cutter-test.html">{tx.cutterTest}</a> · <a href="https://github.com/claude0815/silhouette">{tx.quellcode}</a> ·{' '}
