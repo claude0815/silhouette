@@ -141,6 +141,15 @@ export class GpglCutter implements Cutter {
     this.protokolliere('info', 'Abbruch angefordert: Es werden keine weiteren Blöcke gesendet.');
   }
 
+  /**
+   * Sendet ESC EOT (Initialisieren). Für den Machbarkeitstest: Wie reagiert das Gerät,
+   * wenn das mitten in einem Auftrag kommt? Bricht auch das Senden weiterer Blöcke ab.
+   */
+  async zuruecksetzen(): Promise<void> {
+    this.abbrechen = true;
+    await this.schreibe(BEFEHL_INITIALISIEREN, 'Zurücksetzen');
+  }
+
   async disconnect(): Promise<void> {
     this.abbrechen = true;
     this.verbunden = false;

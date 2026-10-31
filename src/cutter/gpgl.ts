@@ -107,10 +107,11 @@ export function pruefeAuftrag(job: CutJob, profil: GeraeteProfil): void {
         throw new AuftragsFehler(`Pfad ${i + 1} enthält einen ungültigen Punkt.`);
       }
       if (p.x < 0 || p.y < 0 || p.x > bereich.breite || p.y > bereich.hoehe) {
+        const zahl = (n: number, stellen: number) => n.toFixed(stellen).replace('.', ',');
         throw new AuftragsFehler(
           `Pfad ${i + 1} liegt außerhalb des Schneidebereichs ` +
-            `(${bereich.breite.toFixed(1)} × ${bereich.hoehe.toFixed(1)} mm): ` +
-            `Punkt (${p.x.toFixed(2)} | ${p.y.toFixed(2)}) mm.`,
+            `(${zahl(bereich.breite, 1)} × ${zahl(bereich.hoehe, 1)} mm): ` +
+            `Punkt (${zahl(p.x, 2)} | ${zahl(p.y, 2)}) mm.`,
         );
       }
     }
