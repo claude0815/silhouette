@@ -77,6 +77,16 @@ export const de = {
     fertig: 'Auftrag vollständig übertragen. Jetzt nachmessen: Ist das Quadrat genau so groß wie eingestellt?',
     vorschau: 'Lage auf der Matte',
 
+    dxf: 'DXF-Testdateien für Silhouette Studio',
+    dxfErklaerung:
+      'Diese Dateien lassen sich schon ohne Cutter prüfen: in Silhouette Studio öffnen und nachmessen. ' +
+      'Es gibt zwei Varianten, weil noch offen ist, welche Studio besser liest.',
+    dxfPolylinie: 'DXF mit Polylinien herunterladen',
+    dxfLinien: 'DXF mit Einzellinien herunterladen',
+    dxfPruefen: 'Darauf achten',
+    dxfVariantePolylinie: 'Polylinien: jeder Pfad ein zusammenhängendes Objekt (empfohlen).',
+    dxfVarianteLinien: 'Einzellinien: jedes Teilstück ein eigenes Objekt (Rückfallebene).',
+
     protokoll: 'Protokoll',
     protokollLeer: 'Noch keine Einträge.',
     kopieren: 'Kopieren',

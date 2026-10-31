@@ -89,7 +89,7 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 2. ✅ **Cutter-Schnittstelle und GPGL-Modul:** `Cutter`, `CutJob`, `auftragZuBefehlen()` mit Snapshot-Tests; Geräteprofile für Cameo 4, Cameo 5, Portrait 3/4.
 3. ✅ **`SimulatedCutter`:** verhält sich nach außen wie ein echtes Gerät (Status, Senden, Abbruch).
 4. ✅ **Testseite fertig bauen:** WebUSB- und Bluetooth-Verbindung, Statusabfrage, Testquadrat, Abbruch, Protokollfenster mit Kopieren, eingebaute Checkliste. Die Transportschichten werden gegen nachgebildete USB- und Bluetooth-Geräte getestet; eine Simulation macht die Seite auch ohne Cutter vorführbar.
-5. **DXF-Export vorziehen:** Testquadrat und einige Formen als DXF erzeugen. Das lässt sich ohne Cutter in Silhouette Studio auf jedem PC prüfen (Maße, geschlossene Pfade).
+5. ✅ **DXF-Export vorziehen:** Testquadrat und einige Formen als DXF erzeugen. Das lässt sich ohne Cutter in Silhouette Studio auf jedem PC prüfen (Maße, geschlossene Pfade). Zwei Varianten (Polylinien und Einzellinien) auf der Testseite; mit ezdxf gegengeprüft.
 6. **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
 
 ## Noch offen

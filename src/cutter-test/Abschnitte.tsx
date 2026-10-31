@@ -1,6 +1,8 @@
 /** Die Abschnitte der Testseite. Logik steckt in zustand.ts, hier nur die Anzeige. */
 import { useSignal } from '@preact/signals';
 import { matten, schneidebereichMm } from '../cutter/profile';
+import { polylinienZuDxf, type DxfVariante } from '../export/dxf';
+import { testformen } from '../export/testformen';
 import type { MattenId } from '../cutter/types';
 import { t } from '../i18n/de';
 import { berichtAlsMarkdown, berichtDateiname, erkenneBetriebssystem, protokollAlsText, protokollZeile } from './bericht';
@@ -294,12 +296,7 @@ function berichtText(): string {
 }
 
 function ladeHerunter() {
-  const url = URL.createObjectURL(new Blob([berichtText()], { type: 'text/markdown' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = berichtDateiname(new Date());
-  a.click();
-  URL.revokeObjectURL(url);
+  speichereDatei(berichtText(), berichtDateiname(new Date()), 'text/markdown');
 }
 
 export function Checkliste() {
@@ -336,6 +333,66 @@ export function Checkliste() {
         <button onClick={ladeHerunter}>{tx.bericht}</button>
         <button onClick={() => kopiere(berichtText(), kopiert)}>{kopiert.value ? tx.kopiert : tx.berichtKopieren}</button>
       </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+/** Lädt Text als Datei herunter, ganz ohne Server. */
+function speichereDatei(inhalt: string, dateiname: string, typ: string) {
+  const url = URL.createObjectURL(new Blob([inhalt], { type: typ }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = dateiname;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+const FLAECHE = { breite: 200, hoehe: 70 };
+
+function ladeDxf(variante: DxfVariante) {
+  const pfade = testformen().flatMap((f) => f.pfade);
+  speichereDatei(
+    polylinienZuDxf(pfade, { variante, hoeheMm: FLAECHE.hoehe }),
+    `testformen-${variante}.dxf`,
+    'application/dxf',
+  );
+}
+
+export function DxfTest() {
+  const formen = testformen();
+  const d = (pfad: readonly { x: number; y: number }[]) =>
+    pfad.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  return (
+    <section>
+      <h2>{tx.dxf}</h2>
+      <p>{tx.dxfErklaerung}</p>
+      <svg
+        class="testformen"
+        viewBox={`0 0 ${FLAECHE.breite} ${FLAECHE.hoehe}`}
+        role="img"
+        aria-label={tx.dxf}
+      >
+        <rect width={FLAECHE.breite} height={FLAECHE.hoehe} class="flaeche" />
+        {formen.flatMap((f) => f.pfade.map((p) => <path d={d(p)} />))}
+      </svg>
+      <h3>{tx.dxfPruefen}</h3>
+      <ul>
+        {formen.map((f) => (
+          <li>
+            <strong>{f.name}:</strong> {f.beschreibung}
+          </li>
+        ))}
+      </ul>
+      <div class="knoepfe">
+        <button onClick={() => ladeDxf('polylinie')}>{tx.dxfPolylinie}</button>
+        <button onClick={() => ladeDxf('linien')}>{tx.dxfLinien}</button>
+      </div>
+      <ul class="klein">
+        <li>{tx.dxfVariantePolylinie}</li>
+        <li>{tx.dxfVarianteLinien}</li>
+      </ul>
     </section>
   );
 }

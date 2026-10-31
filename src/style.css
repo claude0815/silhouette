@@ -169,3 +169,22 @@ pre.protokoll {
   margin-top: 0.2rem;
   box-sizing: border-box;
 }
+.testformen {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+}
+.testformen .flaeche {
+  fill: #f8fafc;
+  stroke: #cbd5e1;
+  stroke-width: 0.5;
+}
+.testformen path {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 0.6;
+}
+.cutter-test h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}

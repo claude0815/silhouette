@@ -1,5 +1,5 @@
 import { t } from '../i18n/de';
-import { Checkliste, Protokoll, Testauftrag, Umgebung, Verbindung } from './Abschnitte';
+import { Checkliste, DxfTest, Protokoll, Testauftrag, Umgebung, Verbindung } from './Abschnitte';
 
 /** Testseite für Stufe 0: Lässt sich ein Silhouette-Cutter direkt aus dem Browser ansteuern? */
 export function CutterTest() {
@@ -11,6 +11,7 @@ export function CutterTest() {
       <Verbindung />
       <Testauftrag />
       <Protokoll />
+      <DxfTest />
       <Checkliste />
       <p>
         <a href="./">{t.cutterTest.zurApp}</a>
