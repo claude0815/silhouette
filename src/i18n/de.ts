@@ -255,7 +255,7 @@ export const de = {
         leer: {
           titel: 'Nichts zu schneiden',
           befund: () => 'Das Dokument enthält keine Formen oder Pfade.',
-          ok: '',
+          ok: 'Das Dokument enthält Formen zum Schneiden.',
           erklaerung: 'Der Cutter schneidet Pfade und Grundformen (rect, circle, ellipse, line, polyline, polygon, path). Text und Bilder werden nicht geschnitten.',
         },
         fuellung: {
