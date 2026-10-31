@@ -106,3 +106,13 @@ describe('Fehlertoleranz', () => {
     expect(text.slice(h.position, h.ende)).toBe('drehe(5)');
   });
 });
+
+describe('Einheiten', () => {
+  it('Zoll ist eine feste Einheit, Pixel nicht', () => {
+    const zoll = leseSvg('<svg width="2in" height="1in" viewBox="0 0 200 100"></svg>');
+    expect(zoll.breiteMm).toBeCloseTo(50.8);
+    expect(zoll.hinweise.some((h) => /feste Einheit/.test(h.text))).toBe(false);
+    const px = leseSvg('<svg width="200px" height="100" viewBox="0 0 200 100"></svg>');
+    expect(px.hinweise.filter((h) => /feste Einheit/.test(h.text))).toHaveLength(2);
+  });
+});

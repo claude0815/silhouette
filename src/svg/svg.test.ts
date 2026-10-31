@@ -132,7 +132,7 @@ describe('leseSvg', () => {
     const dok = leseSvg('<svg width="100" height="50"><rect x="1"/><path d="M 0 0 L"/><path d="M 0 0 L 96 0"/></svg>');
     const texte = dok.hinweise.map((h) => h.text).join(' | ');
     expect(texte).toMatch(/Keine gültige viewBox/);
-    expect(texte).toMatch(/width ohne Einheit mm/);
+    expect(texte).toMatch(/width=„100“ hat keine feste Einheit/);
     expect(texte).toMatch(/<rect> hat keine gültige Größe/);
     expect(texte).toMatch(/L erwartet 2 Zahlen/);
     // Der gültige Pfad wird trotzdem gelesen: 96 px = 25,4 mm

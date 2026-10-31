@@ -9,6 +9,8 @@ import { beispielbild, ladeDatei, type GeladenesBild } from './bildladen';
 import { fuegeEin, Rechner } from './rechner';
 import { t } from '../i18n/de';
 
+export type Bereich = 'nachzeichnen' | 'werkstatt' | 'simulation';
+export const bereich = signal<Bereich>('nachzeichnen');
 export const schritt = signal(1);
 export const geladen = signal<GeladenesBild | null>(null);
 export const einstellungen = signal<Einstellungen>({ ...STANDARD });

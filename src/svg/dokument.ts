@@ -281,9 +281,10 @@ export function leseSvg(text: string): SvgDokument {
     const a = attribut(wurzel, name);
     const l = a ? laengeInMm(a.wert) : null;
     if (a && !l) hinweise.push({ text: `${name}=„${a.wert}“ ist keine Länge.`, art: 'fehler', position: a.start, ende: a.ende });
-    if (l && l.einheit !== 'mm' && l.einheit !== 'cm') {
+    // Zoll und Punkt sind feste Längen; nur Pixel (oder gar keine Einheit) hängen an der Annahme 96 px je Zoll
+    if (l && (l.einheit === 'px' || l.einheit === '')) {
       hinweise.push({
-        text: `${name} ohne Einheit mm: „${a!.wert}“ wird mit 96 px je Zoll umgerechnet.`,
+        text: `${name}=„${a!.wert}“ hat keine feste Einheit: ${l.einheit === 'px' ? 'Pixel werden' : 'Zahlen ohne Einheit werden als Pixel'} mit 96 px je Zoll umgerechnet. Besser mm angeben.`,
         art: 'hinweis',
         position: a!.start,
         ende: a!.ende,
