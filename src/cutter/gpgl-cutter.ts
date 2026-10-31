@@ -53,6 +53,12 @@ export class GpglCutter implements Cutter {
   private firmwareIntern: string | undefined;
   private abbrechen = false;
   private verbunden = false;
+  /**
+   * Warteschlange: Jeder Zugriff wartet, bis der vorige fertig ist. Sonst könnte z. B. eine
+   * regelmäßige Statusabfrage mitten in einen Auftrag geraten und dessen Antwort „stehlen“.
+   */
+  private kette: Promise<unknown> = Promise.resolve();
+  private laufend = 0;
   private readonly blockgroesse: number;
   private readonly abfrageIntervallMs: number;
   private readonly bereitTimeoutMs: number;
@@ -81,8 +87,29 @@ export class GpglCutter implements Cutter {
     return this.firmwareIntern;
   }
 
+  get istVerbunden(): boolean {
+    return this.verbunden;
+  }
+
+  /** Läuft gerade ein Zugriff (oder wartet einer)? Dann z. B. keine zusätzliche Statusabfrage starten. */
+  get beschaeftigt(): boolean {
+    return this.laufend > 0;
+  }
+
+  /** Führt f aus, sobald alle vorigen Zugriffe fertig sind. */
+  private exklusiv<T>(f: () => Promise<T>): Promise<T> {
+    this.laufend++;
+    const ergebnis = this.kette.then(f, f);
+    this.kette = ergebnis.catch(() => undefined).finally(() => this.laufend--);
+    return ergebnis;
+  }
+
   /** Initialisiert das Gerät und fragt Modell und Firmware ab. */
-  async connect(): Promise<void> {
+  connect(): Promise<void> {
+    return this.exklusiv(() => this.verbindeIntern());
+  }
+
+  private async verbindeIntern(): Promise<void> {
     this.transport.leereEingang();
     await this.schreibe(BEFEHL_INITIALISIEREN, 'Initialisieren');
     const version = await this.frage(befehleZuBytes([ABFRAGE_VERSION]), 'Version abfragen', 10_000);
@@ -96,7 +123,11 @@ export class GpglCutter implements Cutter {
     this.protokolliere('info', `Verbunden: ${this.name}${version ? `, Firmware „${version}“` : ''}`);
   }
 
-  async status(): Promise<StatusAntwort> {
+  status(): Promise<StatusAntwort> {
+    return this.exklusiv(() => this.statusIntern());
+  }
+
+  private async statusIntern(): Promise<StatusAntwort> {
     this.transport.leereEingang();
     await this.schreibe(BEFEHL_STATUS, 'Status abfragen');
     const antwort = await this.transport.lese(5000);
@@ -108,18 +139,31 @@ export class GpglCutter implements Cutter {
     return werteStatusAus(antwort);
   }
 
-  async send(job: CutJob, optionen: SendeOptionen = {}): Promise<void> {
-    if (!this.verbunden || !this.profilIntern) {
-      throw new CutterFehler('Der Cutter ist nicht verbunden.');
-    }
-    this.abbrechen = false;
-
+  send(job: CutJob, optionen: SendeOptionen = {}): Promise<void> {
+    if (!this.verbunden || !this.profilIntern) return Promise.reject(new CutterFehler('Der Cutter ist nicht verbunden.'));
     // Befehle zuerst vollständig erzeugen: Fehler im Auftrag fallen auf, bevor sich etwas bewegt.
-    const befehle = auftragZuBefehlen(job, this.profilIntern);
+    let befehle: string[];
+    try {
+      befehle = auftragZuBefehlen(job, this.profilIntern);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+    return this.sendeBefehle(befehle, optionen);
+  }
+
+  /** Sendet eine fertige Befehlsfolge (z. B. eine Testfahrt), mit Statusprüfung vorher und Abbruchmöglichkeit. */
+  sendeBefehle(befehle: readonly string[], optionen: SendeOptionen = {}): Promise<void> {
+    if (!this.verbunden) return Promise.reject(new CutterFehler('Der Cutter ist nicht verbunden.'));
+    this.abbrechen = false;
+    return this.exklusiv(() => this.sendeIntern(befehle, optionen));
+  }
+
+  private async sendeIntern(befehle: readonly string[], optionen: SendeOptionen): Promise<void> {
+    if (this.abbrechen) throw new AbbruchFehler();
     const bloecke = inBloeckeTeilen(befehleZuBytes(befehle), this.blockgroesse);
     const gesamt = bloecke.reduce((s, b) => s + b.length, 0);
 
-    const vorher = await this.status();
+    const vorher = await this.statusIntern();
     if (vorher.status === 'keine-matte') {
       throw new CutterFehler('Es ist keine Matte bzw. kein Material eingelegt.');
     }
@@ -161,7 +205,7 @@ export class GpglCutter implements Cutter {
   private async warteBisBereit(): Promise<void> {
     const ende = Date.now() + this.bereitTimeoutMs;
     for (;;) {
-      const { status, roh } = await this.status();
+      const { status, roh } = await this.statusIntern();
       if (status === 'bereit') return;
       if (this.abbrechen) throw new AbbruchFehler();
       if (status === 'keine-matte') {

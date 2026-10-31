@@ -119,6 +119,36 @@ export function pruefeAuftrag(job: CutJob, profil: GeraeteProfil): void {
   if (job.werkzeug.halter === 2 && !profil.zweiHalter) {
     throw new AuftragsFehler(`${profil.name} hat keinen zweiten Werkzeughalter.`);
   }
+  if (job.werkzeug.tiefe !== undefined && job.werkzeug.art === 'messer' && job.werkzeug.halter !== 1) {
+    throw new AuftragsFehler('Die Klingentiefe (AutoBlade) lässt sich nur in Halter 1 einstellen.');
+  }
+}
+
+/** Matte, Ausrichtung und Schneidebereich – der gemeinsame Anfang jedes Auftrags (set_cutting_mat). */
+function kopfBefehle(profil: GeraeteProfil, mattenId: CutJob['matte']): string[] {
+  const matte = matten[mattenId];
+  const befehle = [`TG${matte.code}`, 'FN0', 'TB50,0']; // Hochformat; Silhouette Studio sendet beides
+  // Schneidebereich: oben links \y,x und unten rechts Zy,x
+  if (matte.breiteZoll !== undefined && matte.hoeheZoll !== undefined) {
+    befehle.push('\\0,0', `Z${matte.hoeheZoll * SCHRITTE_PRO_ZOLL},${matte.breiteZoll * SCHRITTE_PRO_ZOLL}`);
+  } else {
+    befehle.push('\\0,0', `Z${mmZuSchritten(profil.laengeMm)},${mmZuSchritten(profil.breiteMm)}`);
+  }
+  return befehle;
+}
+
+/** Zurück zum Start (endposition 'start' in Graphtec.py) – das gemeinsame Ende jedes Auftrags. */
+const END_BEFEHLE = ['L0', '\\0,0', 'M0,0', 'J0', 'FN0', 'TB50,0'];
+
+/**
+ * Testfahrt ohne Schnitt: Der Kopf fährt mit angehobenem Werkzeug (nur M-Befehle) ein Quadrat
+ * ab und kehrt zurück. So erkennt man im Raum, welches Gerät verbunden ist, und sieht, ob der
+ * Bereich frei ist – ohne Material zu beschädigen.
+ */
+export function testfahrtBefehle(profil: GeraeteProfil, mattenId: CutJob['matte'], seiteMm = 20, abstandMm = 10): string[] {
+  const a = mmZuSchritten(abstandMm);
+  const b = mmZuSchritten(abstandMm + seiteMm);
+  return [...kopfBefehle(profil, mattenId), `M${a},${a}`, `M${a},${b}`, `M${b},${b}`, `M${b},${a}`, `M${a},${a}`, ...END_BEFEHLE];
 }
 
 /**
@@ -136,20 +166,9 @@ export function auftragZuBefehlen(job: CutJob, profil: GeraeteProfil): string[] 
   const stift = w.art === 'stift';
   const druck = begrenze(w.druck, 1, profil.maxDruck);
   const tempo = begrenze(w.geschwindigkeit, 1, 30);
-  const matte = matten[job.matte];
 
-  const befehle: string[] = [];
-
-  // 1. Matte und Ausrichtung (set_cutting_mat)
-  befehle.push(`TG${matte.code}`);
-  befehle.push('FN0', 'TB50,0'); // Hochformat; Silhouette Studio sendet beides
-
-  // 2. Schneidebereich: oben links \y,x und unten rechts Zy,x
-  if (matte.breiteZoll !== undefined && matte.hoeheZoll !== undefined) {
-    befehle.push('\\0,0', `Z${matte.hoeheZoll * SCHRITTE_PRO_ZOLL},${matte.breiteZoll * SCHRITTE_PRO_ZOLL}`);
-  } else {
-    befehle.push('\\0,0', `Z${mmZuSchritten(profil.laengeMm)},${mmZuSchritten(profil.breiteMm)}`);
-  }
+  // 1. und 2. Matte, Ausrichtung und Schneidebereich (set_cutting_mat)
+  const befehle: string[] = kopfBefehle(profil, job.matte);
 
   // 3. Werkzeug (setup, Zweig für die Produktlinie ab Cameo 4)
   if (profil.zweiHalter) befehle.push(`J${h}`);
@@ -170,12 +189,14 @@ export function auftragZuBefehlen(job: CutJob, profil: GeraeteProfil): string[] 
   befehle.push('TJ3'); // Beschleunigung
   const versatz = stift ? 0 : mmZuSchritten(w.klingenVersatzMm ?? 0.9);
   befehle.push(`FC${versatz},1,${h}`); // Versatz für Stift (0) bzw. Klinge (0,9 mm = 18)
+  // Klingentiefe der AutoBlade, nur Halter 1 (Graphtec.py: autoblade und depth)
+  if (!stift && w.tiefe !== undefined) befehle.push(`TF${begrenze(w.tiefe, 0, 10)},1`);
 
   // 4. Die eigentlichen Pfade
   befehle.push(...pfadBefehle(job.pfade));
 
-  // 5. Zurück zum Start (endposition 'start' in Graphtec.py)
-  befehle.push('L0', '\\0,0', 'M0,0', 'J0', 'FN0', 'TB50,0');
+  // 5. Zurück zum Start
+  befehle.push(...END_BEFEHLE);
 
   return befehle;
 }

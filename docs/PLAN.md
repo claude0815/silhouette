@@ -155,3 +155,12 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 - Ziehen von Punkten bei Grundformen (rect, circle …): bisher nur bei `<path>`.
 - `<use>`, `<text>` und eingebettete Bilder werden nicht geschnitten (Hinweis erscheint). Text in Pfade umwandeln ist Stufe 4.
 - `stroke-width` wird nicht ausgewertet (für den Cutter ohne Bedeutung).
+
+## Stufe 3 – Direkte Ansteuerung (Vorbereitung, 31.10.2026)
+
+Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon nicht abhängt; die vom Test abhängigen Stellen sind als Schätzwert bzw. „im Machbarkeitstest klären“ markiert.
+
+1. Treiber: alle Zugriffe nacheinander (keine Statusabfrage mitten in einen Auftrag), beliebige Befehlsfolgen senden, Testfahrt ohne Schnitt (Werkzeug bleibt oben), optional Klingentiefe für die AutoBlade.
+2. Material-Voreinstellungen mit Ausgangswerten aus inkscape-silhouette (dort für ältere Modelle ermittelt), deutlich als Schätzwert gekennzeichnet; eigene Voreinstellungen speicherbar.
+3. Bereich „Schneiden“: Verbindung per USB, Bluetooth oder Simulation, Gerätename und Status gut sichtbar (auch in der Kopfzeile), regelmäßige Statusabfrage, Testfahrt, Mattenvorschau mit Warnungen, Reihenfolge und Kennzahlen, Senden mit Fortschritt, großer Abbrechen-Knopf, Hinweise (Stift zuerst, Studio schließen, Windows).
+4. Was der Machbarkeitstest liefern muss: Material-Werte, Reaktion auf Abbruch, Geschwindigkeit je Stufe (für die Dauerschätzung), ob die AutoBlade-Tiefe gesetzt werden soll, Bluetooth-Verhalten je Modell.
