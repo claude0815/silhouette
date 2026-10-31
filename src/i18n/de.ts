@@ -3,6 +3,18 @@
  * Eine englische Fassung kann später als en.ts mit derselben Struktur ergänzt werden.
  * Texte mit Platzhaltern sind Funktionen.
  */
+/** Dauer in Sekunden als „1 min 05 s“ bzw. „12,3 s“. */
+export function formatiereDauer(s: number): string {
+  if (s < 60) return `${s.toFixed(1).replace('.', ',')} s`;
+  const m = Math.floor(s / 60);
+  return `${m} min ${String(Math.round(s - 60 * m)).padStart(2, '0')} s`;
+}
+
+/** Länge in mm, ab 1 m in m. */
+export function formatiereLaenge(mm: number): string {
+  return mm >= 1000 ? `${(mm / 1000).toFixed(2).replace('.', ',')} m` : `${Math.round(mm)} mm`;
+}
+
 export const de = {
   app: {
     titel: 'Vom Pixel zum Schnitt',
@@ -10,6 +22,7 @@ export const de = {
     quellcode: 'Quellcode auf GitHub',
     lizenz: 'Lizenz: GPL-2.0-or-later',
     cutterTest: 'Machbarkeitstest Cutter',
+    ueber: 'Über und Lizenzen',
     rechnet: 'rechnet …',
     rechenzeit: (ms: number) => `${ms.toFixed(0)} ms`,
     fehler: 'Fehler',
@@ -35,6 +48,7 @@ export const de = {
       'Vereinfachen',
       'Glätten',
       'SVG erzeugen',
+      'Simulation',
     ],
 
     laden: {
@@ -47,6 +61,17 @@ export const de = {
       groesse: (b: number, h: number) => `${b} × ${h} Pixel = ${(b * h).toLocaleString('de-DE')} Pixel`,
       ungueltig: 'Diese Datei konnte nicht als Bild gelesen werden.',
       bleibtLokal: 'Das Bild bleibt auf diesem Gerät. Es wird nichts hochgeladen.',
+      zuschnitt: 'Zuschnitt',
+      zuschneiden: 'Zuschneiden …',
+      zuschnittHinweis: 'Im Bild ein Rechteck aufziehen oder die Werte eingeben.',
+      uebernehmen: 'Übernehmen',
+      abbrechen: 'Abbrechen',
+      aufheben: 'Zuschnitt aufheben',
+      zuschnittInfo: (x: number, y: number, b: number, h: number) => `Ausschnitt ${b} × ${h} Pixel ab (${x} | ${y}) des Originals`,
+      links: 'Links (x)',
+      oben: 'Oben (y)',
+      breite: 'Breite',
+      hoehe: 'Höhe',
       erklaerung: [
         'Ein Rasterbild ist eine Tabelle aus Pixeln. Jedes Pixel hat drei Farbwerte: Rot, Grün und Blau, jeweils von 0 bis 255. Dazu kommt bei PNG oft ein vierter Wert für die Deckkraft (Alpha).',
         'Die Auflösung gibt an, wie viele Pixel das Bild hat. Mehr Pixel bedeuten feinere Details, aber auch mehr Rechenarbeit.',
@@ -143,6 +168,51 @@ export const de = {
         'Echte Ecken sollen spitz bleiben, sonst wird ein „L“ rund. Knickt die Kontur stärker als der eingestellte Winkel, bleibt die Ecke spitz.',
       ],
     },
+    simulation: {
+      reihenfolge: 'Schnittreihenfolge',
+      reihenfolgen: {
+        original: 'Original (wie im SVG)',
+        'innen-vor-aussen': 'Innen vor außen',
+        'naechster-nachbar': 'Nächster Nachbar',
+      } as Record<string, string>,
+      vergleich: 'Vergleich',
+      spalteSchnitt: 'Schnitt',
+      spalteLeer: 'Leerfahrt',
+      spalteDauer: 'Dauer',
+      geraet: 'Gerät',
+      matte: 'Schneidematte',
+      werkzeug: 'Werkzeug',
+      stift: 'Stift',
+      messer: 'Messer',
+      geschwindigkeit: 'Geschwindigkeit (1–30)',
+      druck: 'Druck (1–33)',
+      abspielen: 'Abspielen',
+      pause: 'Pause',
+      vonVorn: 'Von vorn',
+      zeitraffer: 'Zeitraffer',
+      zeitleiste: 'Zeitleiste der Simulation',
+      zeit: (t: number, gesamt: number) => `${formatiereDauer(t)} von ${formatiereDauer(gesamt)}`,
+      kennzahlen: 'Kennzahlen',
+      schnittlaenge: 'Schnittlänge',
+      leerfahrt: 'Leerfahrten',
+      dauer: 'Geschätzte Dauer',
+      pfade: 'Pfade',
+      annahme: 'Dauer geschätzt mit Stufe n ≈ n cm/s und 0,15 s je Absenken; echte Werte misst der Machbarkeitstest.',
+      warnungAussen: (n: number) =>
+        `${n} ${n === 1 ? 'Außenkontur wird' : 'Außenkonturen werden'} vor den Löchern darin geschnitten. Das Teil kann sich lösen, bevor ein Loch fertig ist.`,
+      befehle: 'Plotterbefehle',
+      befehlInfo: (i: number, n: number) => `Befehl ${i} von ${n}`,
+      keinSvg: 'Noch kein SVG: zuerst ein Bild laden.',
+      legendeSchnitt: 'Schnitt',
+      legendeLeer: 'Leerfahrt',
+      legendeStart: 'Startpunkt und Richtung',
+      erklaerung: [
+        'Die Simulation liest dieselben Plotterbefehle, die auch an den Cutter gingen: M fährt mit angehobenem Messer (Leerfahrt), D mit abgesenktem Messer (Schnitt). Die Koordinaten stehen in Schritten von 0,05 mm, zuerst y, dann x.',
+        'Ein Cutter schneidet nur Konturen, Füllungen sind ihm egal. Jeder Pfad hat einen Startpunkt und eine Richtung.',
+        '„Innen vor außen“: Löcher werden vor der Form geschnitten, die sie umgibt. Sonst kann sich das Teil lösen, bevor das Loch fertig ist.',
+        '„Nächster Nachbar“ fährt immer zum nächstgelegenen Pfad, der schon dran ist, und beginnt dort an der nächsten Ecke. Das spart meist Leerfahrten. Das Verfahren ist aber „gierig“: Es denkt nie voraus, etwa an den Rückweg zum Ursprung. Darum ist es nicht immer das kürzeste.',
+      ],
+    },
     svg: {
       breite: 'Breite (mm)',
       hoehe: (mm: number) => `Höhe: ${mm.toFixed(1).replace('.', ',')} mm`,
@@ -155,6 +225,17 @@ export const de = {
       kopiert: 'Kopiert',
       massstab: (mmJePx: number) => `1 Pixel = ${mmJePx.toFixed(3).replace('.', ',')} mm`,
       formen: (n: number) => (n === 1 ? '1 Form' : `${n} Formen`),
+      befehlHinweis: 'Über eine Form oder einen Befehl im Code fahren.',
+      befehl: {
+        M: (p: string) => `M – Stift anheben und bei ${p} aufsetzen: Beginn eines Teilpfads.`,
+        L: (von: string, p: string) => `L – gerade Strecke von ${von} nach ${p}.`,
+        C: (von: string, c1: string, c2: string, p: string) =>
+          `C – kubische Bézier-Kurve von ${von} nach ${p}, gezogen von den Kontrollpunkten ${c1} und ${c2}.`,
+        Z: (von: string, p: string) => `Z – Teilpfad schließen: gerade zurück von ${von} zum Anfang ${p}.`,
+        sonst: (name: string) =>
+          name === 'Z' ? 'Z – Teilpfad schließen. Der letzte Punkt liegt schon am Anfang, es kommt keine Linie dazu.' : name,
+      },
+      form: (n: number) => `Form ${n}`,
       erklaerung: [
         'Das SVG-Dokument beschreibt die Formen als Text. width und height mit „mm“ legen die echte Größe fest, die viewBox das Koordinatensystem. Hier ist 1 Einheit = 1 mm, der Ursprung liegt oben links, y zeigt nach unten.',
         'Jede Form ist ein <path>. Im d-Attribut stehen Befehle: M setzt den Stift an, L zieht eine Strecke, C eine Bézier-Kurve, Z schließt den Teilpfad.',
@@ -162,6 +243,30 @@ export const de = {
         'Fahre über eine Form oder über eine Zeile im Code: Das Gegenstück wird markiert.',
       ],
     },
+  },
+  ueber: {
+    titel: 'Über und Lizenzen',
+    zurueck: 'Zurück zur App',
+    absaetze: [
+      '„Vom Pixel zum Schnitt“ zeigt Schritt für Schritt, wie aus einem Pixelbild Schnittpfade für einen Schneideplotter werden. Jeder Schritt ist sichtbar und einstellbar, der Quellcode ist selbst als Lernmaterial gedacht.',
+      'Die App läuft vollständig im Browser. Bilder und Daten verlassen das Gerät nicht; es gibt kein Tracking und keine Anmeldung.',
+    ],
+    lizenzTitel: 'Lizenz dieser App',
+    lizenzText:
+      'Die App steht unter der GNU General Public License, Version 2 oder (nach Wahl) jeder späteren Version (GPL-2.0-or-later). Alle dürfen sie nutzen, verändern und weitergeben, auch kommerziell. Weiterentwicklungen müssen wieder unter der GPL offen sein.',
+    quellcode: 'Quellcode',
+    gplVolltext: 'Volltext der GPL-2.0',
+    fremdTitel: 'Verwendete Bibliotheken',
+    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft.',
+    lizenztext: 'Lizenztext',
+    uebernommenTitel: 'Übernommenes Wissen und übernommener Code',
+    uebernommenText:
+      'Befehlsfolgen, Geräte-IDs, Bluetooth-Kennungen und Abläufe für die Silhouette-Cutter stammen aus inkscape-silhouette (Dateien silhouette/Graphtec.py, Transport.py und BLETransport.py, Commit f376a08), nach TypeScript übertragen. Die Herkunft ist in den betroffenen Dateien vermerkt.',
+    uebernommenCopyright:
+      '(c) 2013, 2014 jw@suse.de · (c) 2016 juewei@fabmail.org · (c) 2016 Alexander Wenger · (c) 2017 Johann Gail · (c) 2026 inkscape-silhouette contributors – „Distribute under GPLv2 or ask“.',
+    algorithmenTitel: 'Algorithmen',
+    algorithmenText:
+      'Schwellwert, Otsu-Verfahren (N. Otsu, 1979), Marching Squares, Douglas-Peucker (D. Douglas, T. Peucker, 1973) und die Bézier-Glättung sind für diese App selbst geschrieben und auf Deutsch kommentiert.',
   },
   cutterTest: {
     titel: 'Machbarkeitstest Cutter',

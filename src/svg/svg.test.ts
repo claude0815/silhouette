@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { istGeschlossen } from '../export/dxf';
 import { erzeugeSvg } from '../pipeline/svg-erzeugen';
 import { laengeInMm, leseElemente, leseSvg, svgZuPolylinien } from './dokument';
-import { alsLinienzug, alsTeilpfade, lesePfad, PfadFehler } from './pfad';
+import { alsLinienzug, alsTeilpfade, befehlsGeometrie, lesePfad, naechsterBefehl, PfadFehler } from './pfad';
 
 describe('lesePfad', () => {
   it('liest Befehle mit ihrer Stelle im Text', () => {
@@ -146,5 +146,25 @@ describe('leseSvg', () => {
       { x: 0, y: 0 },
       { x: 20, y: 10 },
     ]);
+  });
+});
+
+describe('Geometrie je Befehl', () => {
+  const befehle = lesePfad('M 0 0 L 10 0 C 15 0 15 10 10 10 Z');
+
+  it('ordnet jedem Befehl zu, was er zeichnet', () => {
+    const g = befehlsGeometrie(befehle);
+    expect(g.get(0)).toEqual({ art: 'punkt', p: { x: 0, y: 0 } });
+    expect(g.get(1)).toEqual({ art: 'strecke', von: { x: 0, y: 0 }, p: { x: 10, y: 0 } });
+    expect(g.get(2)?.art).toBe('kurve');
+    // Z schließt mit einer Strecke zurück zum Anfang
+    expect(g.get(3)).toEqual({ art: 'strecke', von: { x: 10, y: 10 }, p: { x: 0, y: 0 } });
+  });
+
+  it('findet den Befehl zur Stelle unter dem Mauszeiger', () => {
+    const g = befehlsGeometrie(befehle);
+    expect(naechsterBefehl(g, { x: 5, y: 0.3 }, 0.1)).toBe(1); // auf der oberen Strecke
+    expect(naechsterBefehl(g, { x: 13.8, y: 5 }, 0.1)).toBe(2); // am Bauch der Kurve
+    expect(naechsterBefehl(g, { x: 5, y: 5.2 }, 0.1)).toBe(3); // auf der Schlussdiagonale
   });
 });

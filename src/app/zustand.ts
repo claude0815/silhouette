@@ -4,7 +4,7 @@
  */
 import { batch, effect, signal } from '@preact/signals';
 import { STANDARD, type Einstellungen, type Ergebnis } from '../pipeline/ablauf';
-import type { Farbbild } from '../pipeline/bilder';
+import { schneideZu, type Farbbild, type Rechteck } from '../pipeline/bilder';
 import { beispielbild, ladeDatei, type GeladenesBild } from './bildladen';
 import { fuegeEin, Rechner } from './rechner';
 import { t } from '../i18n/de';
@@ -75,4 +75,18 @@ export async function oeffneDatei(datei: File): Promise<void> {
 
 export function oeffneBeispiel(): void {
   neuesBild(beispielbild());
+}
+
+/** Schneidet das Bild zu. Das Rechteck bezieht sich immer auf das Bild vor dem Zuschnitt. */
+export function schneideBildZu(r: Rechteck): void {
+  const g = geladen.value;
+  if (!g) return;
+  const vorher = g.zuschnitt?.vorher ?? g.bild;
+  neuesBild({ ...g, bild: schneideZu(vorher, r), zuschnitt: { vorher, rechteck: r } });
+}
+
+export function hebeZuschnittAuf(): void {
+  const g = geladen.value;
+  if (!g?.zuschnitt) return;
+  neuesBild({ ...g, bild: g.zuschnitt.vorher, zuschnitt: undefined });
 }

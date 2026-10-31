@@ -1,10 +1,16 @@
 import { t } from '../i18n/de';
 import { Ablage, Schritt1, Schritt2, Schritt3, Schritt4 } from './schritte/RasterSchritte';
+import { Schritt9 } from './schritte/SimulationSchritt';
 import { Schritt5, Schritt6, Schritt7, Schritt8 } from './schritte/VektorSchritte';
+import { signal } from '@preact/signals';
+import { Ueber } from './Ueber';
 import { ergebnis, fehler, geladen, rechnet, schritt } from './zustand';
 
+/** Zeigt statt der Schritte die Seite „Über und Lizenzen“ */
+const zeigeUeber = signal(typeof location !== 'undefined' && location.hash === '#ueber');
+
 const tx = t.app;
-const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8];
+const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8, Schritt9];
 
 function Schrittleiste() {
   const zeiten = ergebnis.value?.zeiten ?? {};
@@ -18,7 +24,10 @@ function Schrittleiste() {
             class={`schritt-knopf ${schritt.value === n ? 'aktiv' : ''}`}
             aria-current={schritt.value === n ? 'step' : undefined}
             disabled={!geladen.value}
-            onClick={() => (schritt.value = n)}
+            onClick={() => {
+              schritt.value = n;
+              zeigeUeber.value = false;
+            }}
           >
             <span class="nummer">{n}</span>
             <span class="name">{name}</span>
@@ -32,7 +41,7 @@ function Schrittleiste() {
 
 function Start() {
   return (
-    <div class="start">
+    <div class="startseite">
       <p class="einleitung">{tx.untertitel}.</p>
       <Ablage />
     </div>
@@ -55,10 +64,21 @@ export function App() {
           {tx.fehler}: {fehler.value}
         </p>
       )}
-      <main class="inhalt">{geladen.value ? <Ansicht /> : <Start />}</main>
+      <main class="inhalt">
+        {zeigeUeber.value ? <Ueber zurueck={() => (zeigeUeber.value = false)} /> : geladen.value ? <Ansicht /> : <Start />}
+      </main>
       <footer class="fuss klein">
         <a href="./cutter-test.html">{tx.cutterTest}</a> · <a href="https://github.com/claude0815/silhouette">{tx.quellcode}</a> ·{' '}
-        {tx.lizenz}
+        {tx.lizenz} ·{' '}
+        <a
+          href="#ueber"
+          onClick={(e) => {
+            e.preventDefault();
+            zeigeUeber.value = true;
+          }}
+        >
+          {tx.ueber}
+        </a>
       </footer>
     </div>
   );

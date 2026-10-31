@@ -101,11 +101,16 @@ export function lesePfad(d: string): PfadBefehl[] {
   return befehle;
 }
 
-/** Ein Abschnitt eines Teilpfads in absoluten Koordinaten. */
-export type Abschnitt = { typ: 'L'; p: Punkt } | { typ: 'C'; c1: Punkt; c2: Punkt; p: Punkt };
+/**
+ * Ein Abschnitt eines Teilpfads in absoluten Koordinaten.
+ * `befehl` ist der Index des Befehls, aus dem er entstand – für die Markierung im Code.
+ */
+export type Abschnitt = ({ typ: 'L'; p: Punkt } | { typ: 'C'; c1: Punkt; c2: Punkt; p: Punkt }) & { befehl: number };
 
 export interface Teilpfad {
   start: Punkt;
+  /** Index des M-Befehls (−1, wenn der Teilpfad ohne M nach einem Z weitergeht) */
+  startBefehl: number;
   abschnitte: Abschnitt[];
   geschlossen: boolean;
 }
@@ -124,7 +129,7 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
   let letzterC: Punkt | null = null;
   let letzterQ: Punkt | null = null;
 
-  for (const b of befehle) {
+  befehle.forEach((b, nr) => {
     const w = b.werte;
     const abs = (i: number): Punkt =>
       b.relativ ? { x: aktuell.x + w[i]!, y: aktuell.y + w[i + 1]! } : { x: w[i]!, y: w[i + 1]! };
@@ -135,38 +140,38 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
     if (b.typ === 'M') {
       aktuell = abs(0);
       start = aktuell;
-      tp = { start, abschnitte: [], geschlossen: false };
+      tp = { start, startBefehl: nr, abschnitte: [], geschlossen: false };
       teilpfade.push(tp);
     } else if (b.typ === 'Z') {
       if (tp) {
         tp.geschlossen = true;
-        if (aktuell.x !== start.x || aktuell.y !== start.y) tp.abschnitte.push({ typ: 'L', p: start });
+        if (aktuell.x !== start.x || aktuell.y !== start.y) tp.abschnitte.push({ typ: 'L', p: start, befehl: nr });
       }
       aktuell = start;
       tp = null;
     } else {
       if (!tp) {
         // Nach Z ohne neues M geht es am Anfangspunkt weiter
-        tp = { start: aktuell, abschnitte: [], geschlossen: false };
+        tp = { start: aktuell, startBefehl: -1, abschnitte: [], geschlossen: false };
         teilpfade.push(tp);
       }
       let a: Abschnitt;
       switch (b.typ) {
         case 'L':
-          a = { typ: 'L', p: abs(0) };
+          a = { typ: 'L', p: abs(0), befehl: nr };
           break;
         case 'H':
-          a = { typ: 'L', p: { x: b.relativ ? aktuell.x + w[0]! : w[0]!, y: aktuell.y } };
+          a = { typ: 'L', p: { x: b.relativ ? aktuell.x + w[0]! : w[0]!, y: aktuell.y }, befehl: nr };
           break;
         case 'V':
-          a = { typ: 'L', p: { x: aktuell.x, y: b.relativ ? aktuell.y + w[0]! : w[0]! } };
+          a = { typ: 'L', p: { x: aktuell.x, y: b.relativ ? aktuell.y + w[0]! : w[0]! }, befehl: nr };
           break;
         case 'C':
-          a = { typ: 'C', c1: abs(0), c2: abs(2), p: abs(4) };
+          a = { typ: 'C', c1: abs(0), c2: abs(2), p: abs(4), befehl: nr };
           neuC = a.c2;
           break;
         case 'S':
-          a = { typ: 'C', c1: spiegel(letzterC), c2: abs(0), p: abs(2) };
+          a = { typ: 'C', c1: spiegel(letzterC), c2: abs(0), p: abs(2), befehl: nr };
           neuC = a.c2;
           break;
         case 'Q':
@@ -178,6 +183,7 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
             c1: { x: aktuell.x + (2 / 3) * (q.x - aktuell.x), y: aktuell.y + (2 / 3) * (q.y - aktuell.y) },
             c2: { x: p.x + (2 / 3) * (q.x - p.x), y: p.y + (2 / 3) * (q.y - p.y) },
             p,
+            befehl: nr,
           };
           neuQ = q;
           break;
@@ -188,8 +194,60 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
     }
     letzterC = neuC;
     letzterQ = neuQ;
-  }
+  });
   return teilpfade;
+}
+
+/** Was ein einzelner Befehl zeichnet – für die Markierung in der Grafik. */
+export type BefehlsGeometrie =
+  | { art: 'punkt'; p: Punkt }
+  | { art: 'strecke'; von: Punkt; p: Punkt }
+  | { art: 'kurve'; von: Punkt; c1: Punkt; c2: Punkt; p: Punkt };
+
+/** Geometrie je Befehl (Index wie in `befehle`); Befehle ohne eigene Linie fehlen. */
+export function befehlsGeometrie(befehle: readonly PfadBefehl[]): Map<number, BefehlsGeometrie> {
+  const ergebnis = new Map<number, BefehlsGeometrie>();
+  for (const tp of alsTeilpfade(befehle)) {
+    if (tp.startBefehl >= 0) ergebnis.set(tp.startBefehl, { art: 'punkt', p: tp.start });
+    let von = tp.start;
+    for (const a of tp.abschnitte) {
+      ergebnis.set(a.befehl, a.typ === 'L' ? { art: 'strecke', von, p: a.p } : { art: 'kurve', von, c1: a.c1, c2: a.c2, p: a.p });
+      von = a.p;
+    }
+  }
+  return ergebnis;
+}
+
+/**
+ * Welcher Befehl zeichnet die Linie, die dem Punkt p am nächsten liegt?
+ * Kurven werden dafür grob in Strecken zerlegt.
+ */
+export function naechsterBefehl(geometrie: ReadonlyMap<number, BefehlsGeometrie>, p: Punkt, toleranz: number): number | null {
+  let bester: number | null = null;
+  let besterAbstand = Infinity;
+  const strecke = (a: Punkt, b: Punkt) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const l2 = dx * dx + dy * dy;
+    const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2));
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  };
+  for (const [nr, g] of geometrie) {
+    let d: number;
+    if (g.art === 'punkt') d = Math.hypot(p.x - g.p.x, p.y - g.p.y);
+    else if (g.art === 'strecke') d = strecke(g.von, g.p);
+    else {
+      const punkte = [g.von];
+      zerlegeBezier(g.von, g.c1, g.c2, g.p, toleranz, punkte);
+      d = Infinity;
+      for (let i = 1; i < punkte.length; i++) d = Math.min(d, strecke(punkte[i - 1]!, punkte[i]!));
+    }
+    if (d < besterAbstand) {
+      besterAbstand = d;
+      bester = nr;
+    }
+  }
+  return bester;
 }
 
 /**
