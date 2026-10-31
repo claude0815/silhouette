@@ -33,9 +33,12 @@ Die vollständigen Anforderungen stehen in `docs/ANFORDERUNGEN.md`. Lies sie vor
 ## Aufbau
 
 - Preact mit `@preact/signals`, TypeScript, Vite, Vitest.
-- `index.html` → `src/app/`: die App. `cutter-test.html` → `src/cutter-test/`: Testseite Stufe 0 (Zustand in `zustand.ts`, Bericht in `bericht.ts`).
+- `index.html` → `src/app/`: die App (Zustand `zustand.ts`, Worker-Anbindung `rechner.ts`, `Bildansicht.tsx`, Schrittansichten in `schritte/`). `cutter-test.html` → `src/cutter-test/`: Testseite Stufe 0 (Zustand in `zustand.ts`, Bericht in `bericht.ts`).
 - `src/i18n/de.ts`: alle Texte der Oberfläche.
 - `src/cutter/`: Cutter-Schnittstelle (`types.ts`), Geräteprofile (`profile.ts`), reine GPGL-Übersetzung (`gpgl.ts`), Transportschicht (`transport.ts`), gemeinsamer Treiber `GpglCutter`, Übertragungswege `webusb.ts`, `bluetooth.ts` und `SimulatedCutter`. Protokoll und Quellen: `docs/protokoll.md`.
+- `src/pipeline/`: Bildverarbeitung als reine Funktionen (Graustufen, Schwellwert/Otsu, Entrauschen, Marching Squares, Douglas-Peucker, Bézier-Glättung, SVG erzeugen). Koordinaten in Pixeln, Ursprung oben links.
+- `src/pipeline/ablauf.ts`: führt die Schritte aus und rechnet nur ab dem ersten geänderten Schritt neu. `src/worker/`: Rechendienst im Web Worker.
+- `src/svg/`: SVG lesen (Pfadbefehle mit Textpositionen, Größe in mm) und in Linienzüge in mm zerlegen. Grundlage für Export, Simulation und Cutter.
 - `src/export/`: DXF-Export (`dxf.ts`, Format R12, mm, y gespiegelt) und Testformen.
 - Tests liegen neben dem Code als `*.test.ts`.
 - `.github/workflows/deploy.yml`: Tests und Build bei jedem Push, Deployment auf GitHub Pages nur von `main`.

@@ -58,14 +58,34 @@ src/
 ### Reihenfolge der Umsetzung
 
 1. **Projekt-Setup** (Vite, TypeScript, Vitest, ESLint/Prettier, Pages-Deployment, LICENSE).
-2. **Algorithmen als reine Funktionen** mit Tests und deutschen Kommentaren: Graustufen → Histogramm/Otsu → Schwellwert → Entrauschen → Marching Squares → Douglas-Peucker → Bézier → SVG.
-3. **Web Worker** und Übertragung der Zwischenstände (Transferable `ArrayBuffer`, kein SharedArrayBuffer).
-4. **Oberfläche der Pipeline:** Bild laden (Drag & Drop, Zuschnitt), pro Schritt eine Ansicht mit Reglern und Datenansicht (Pixelwerte, 0/1-Matrix, Punktliste), aufklappbare Erklärung.
-5. **SVG-Dokument und verknüpfte Ansicht:** Code (zunächst nur lesbar, editierbar erst in Stufe 2) neben der Grafik, Hover/Klick markiert in beide Richtungen.
+2. ✅ **Algorithmen als reine Funktionen** mit Tests und deutschen Kommentaren: Graustufen → Histogramm/Otsu → Schwellwert → Entrauschen → Marching Squares → Douglas-Peucker → Bézier → SVG.
+3. ✅ **Web Worker** und Übertragung der Zwischenstände (Transferable `ArrayBuffer`, kein SharedArrayBuffer).
+4. ✅ **Oberfläche der Pipeline:** Bild laden (Drag & Drop, Zuschnitt), pro Schritt eine Ansicht mit Reglern und Datenansicht (Pixelwerte, 0/1-Matrix, Punktliste), aufklappbare Erklärung.
+5. 🔶 **SVG-Dokument und verknüpfte Ansicht:** Code (zunächst nur lesbar, editierbar erst in Stufe 2) neben der Grafik, Hover/Klick markiert in beide Richtungen.
 6. **Flatten + Simulation:** Messerweg abspielen, Leerfahrten, Kennzahlen, Reihenfolgen vergleichen, GPGL-Befehle zeilensynchron (mit `SimulatedCutter`).
 7. **Export:** SVG und DXF, Zwischenstände als PNG/CSV/JSON.
 8. **Seite „Über und Lizenzen“** mit Link zum Quellcode.
 9. **Leistung prüfen:** Bild 2000 × 2000 px ohne spürbare Wartezeit (Messung im Test bzw. per Benchmark-Skript).
+
+### Stand der Algorithmen (31.10.2026)
+
+- Dateien in `src/pipeline/` (deutsche Namen statt der Platzhalter oben): `bilder.ts`, `graustufen.ts`, `schwellwert.ts`, `entrauschen.ts`, `konturen.ts`, `vereinfachen.ts`, `glaetten.ts`, `svg-erzeugen.ts`.
+- Nachbarschaft: Vordergrund 4er, Hintergrund 8er; Marching Squares trennt Sattelfälle passend dazu. Löcher werden über die Bereichsnummer ihrer Außenkontur zugeordnet.
+- Laufzeit bei 2000 × 2000 Pixeln (Node, ohne Worker): Graustufen bis Konturen zusammen etwa 0,7 s.
+
+### Stand der Oberfläche (31.10.2026)
+
+- Erste bedienbare Fassung: acht Schrittansichten mit Reglern, Bildansicht mit Zoom bis auf Pixel und Pixel-Inspektor, Datenansicht je Schritt, Erklärungen, Marching-Squares-Animation auf einem 16 × 16-Ausschnitt, Formauswahl, SVG-Code neben der Grafik mit Markierung in beide Richtungen (je Form bzw. Codezeile), Download als PNG, CSV, JSON, SVG und DXF.
+- DXF wird aus dem SVG-Text erzeugt (`src/svg/`), nicht aus den Zwischenständen.
+- Laufzeit im Browser bei 2000 × 2000 Pixeln: erster Durchlauf etwa 2 s, jede weitere Änderung etwa 0,6 s (Worker warm). Beim Beispielbild (640 × 400) unter 0,2 s.
+
+**Noch offen in Stufe 1**
+
+- Zuschnitt beim Laden (Schritt 1).
+- Markierung einzelner Pfadbefehle (M, L, C, Z) statt ganzer Zeilen.
+- Schnitt-Simulation mit Reihenfolgen und Kennzahlen (Schritt 6 der Reihenfolge oben).
+- Seite „Über und Lizenzen“.
+- Laufzeit großer Bilder: Kopieren der Zwischenstände aus dem Worker und Aufbau der Anzeige kosten zusammen etwa 0,25 s.
 
 ### Testansatz
 
@@ -90,7 +110,7 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 3. ✅ **`SimulatedCutter`:** verhält sich nach außen wie ein echtes Gerät (Status, Senden, Abbruch).
 4. ✅ **Testseite fertig bauen:** WebUSB- und Bluetooth-Verbindung, Statusabfrage, Testquadrat, Abbruch, Protokollfenster mit Kopieren, eingebaute Checkliste. Die Transportschichten werden gegen nachgebildete USB- und Bluetooth-Geräte getestet; eine Simulation macht die Seite auch ohne Cutter vorführbar.
 5. ✅ **DXF-Export vorziehen:** Testquadrat und einige Formen als DXF erzeugen. Das lässt sich ohne Cutter in Silhouette Studio auf jedem PC prüfen (Maße, geschlossene Pfade). Zwei Varianten (Polylinien und Einzellinien) auf der Testseite; mit ezdxf gegengeprüft.
-6. **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
+6. ✅ **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
 
 ## Noch offen
 
