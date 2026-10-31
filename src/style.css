@@ -1,0 +1,23 @@
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1e293b;
+  background: #f8fafc;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+code {
+  font-family: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+}
+.ok {
+  color: #15803d;
+}
+.fehlt {
+  color: #b91c1c;
+}
