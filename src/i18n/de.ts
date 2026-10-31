@@ -48,8 +48,12 @@ export const de = {
       'Vereinfachen',
       'Glätten',
       'SVG erzeugen',
-      'Simulation',
     ],
+    bereiche: {
+      nachzeichnen: 'Nachzeichnen',
+      werkstatt: 'SVG-Werkstatt',
+      simulation: 'Simulation',
+    },
 
     laden: {
       ziehen: 'Bild hierher ziehen (PNG oder JPG)',
@@ -202,7 +206,7 @@ export const de = {
         `${n} ${n === 1 ? 'Außenkontur wird' : 'Außenkonturen werden'} vor den Löchern darin geschnitten. Das Teil kann sich lösen, bevor ein Loch fertig ist.`,
       befehle: 'Plotterbefehle',
       befehlInfo: (i: number, n: number) => `Befehl ${i} von ${n}`,
-      keinSvg: 'Noch kein SVG: zuerst ein Bild laden.',
+      keinSvg: 'Das Dokument ist leer. In der SVG-Werkstatt etwas zeichnen oder ein Bild nachzeichnen.',
       legendeSchnitt: 'Schnitt',
       legendeLeer: 'Leerfahrt',
       legendeStart: 'Startpunkt und Richtung',
@@ -213,6 +217,106 @@ export const de = {
         '„Nächster Nachbar“ fährt immer zum nächstgelegenen Pfad, der schon dran ist, und beginnt dort an der nächsten Ecke. Das spart meist Leerfahrten. Das Verfahren ist aber „gierig“: Es denkt nie voraus, etwa an den Rückweg zum Ursprung. Darum ist es nicht immer das kürzeste.',
       ],
     },
+    werkstatt: {
+      editor: 'SVG-Code',
+      vorschau: 'Vorschau',
+      eigeneFassung: 'Eigene Fassung – Änderungen im Nachzeichnen werden nicht übernommen.',
+      folgtNachzeichnen: 'Dieses Dokument folgt dem Nachzeichnen. Sobald du es bearbeitest, wird es eine eigene Fassung.',
+      uebernehmen: 'Aus dem Nachzeichnen übernehmen',
+      uebernehmenFrage: 'Die eigene Fassung wird durch das nachgezeichnete SVG ersetzt. Fortfahren?',
+      neu: 'Neues Dokument',
+      neuFrage: 'Das Dokument wird durch ein Startbeispiel ersetzt. Fortfahren?',
+      oeffnen: 'SVG öffnen',
+      speichern: 'SVG speichern',
+      dxf: 'DXF speichern',
+      cutterAnsicht: 'Cutter-Ansicht (nur Konturen)',
+      zoomRein: 'Vergrößern',
+      zoomRaus: 'Verkleinern',
+      einpassen: 'Einpassen',
+      keineFehler: 'Keine Fehler.',
+      fehler: (n: number) => (n === 1 ? '1 Fehler' : `${n} Fehler`),
+      hinweise: (n: number) => (n === 1 ? '1 Hinweis' : `${n} Hinweise`),
+      zurStelle: 'Zur Stelle im Code springen',
+      reiter: { erklaerer: 'Pfad-Erklärer', checks: 'Cutter-Checks', beispiele: 'Beispiele' } as Record<string, string>,
+      keineAuswahl: 'In der Vorschau eine Form anklicken oder den Cursor im Code in ein Element setzen.',
+      element: (name: string, n: number) => `<${name}> · Element ${n}`,
+      umgerechnetAus: (name: string) =>
+        `Ein Cutter kennt nur Pfade. Das <${name}> wird deshalb in diese Pfadbefehle umgerechnet:`,
+      ziehenHinweis: 'Punkte (●) und Kontrollpunkte (○) in der Vorschau ziehen – der Code ändert sich mit.',
+      relativHinweis: 'Relative Befehle (Kleinbuchstaben) beziehen sich auf den Punkt davor. Ziehst du einen davon, wandern die folgenden relativen Punkte mit.',
+      transformHinweis: (t: string | undefined) =>
+        (t ? `Dieses Element hat transform="${t}"` : 'Eine umgebende Gruppe hat ein transform') +
+        ': Es wird verschoben, gedreht oder skaliert. Die Koordinaten im Code gelten vor dieser Transformation.',
+      fuellung: (f: string | null, k: string | null) =>
+        `Füllung: ${f ?? 'keine'} · Kontur: ${k ?? 'keine'}`,
+      matte: 'Prüfen für',
+      checkStufe: { ok: 'in Ordnung', info: 'Hinweis', warnung: 'Warnung' } as Record<string, string>,
+      checks: {
+        leer: {
+          titel: 'Nichts zu schneiden',
+          befund: () => 'Das Dokument enthält keine Formen oder Pfade.',
+          ok: 'Das Dokument enthält Formen zum Schneiden.',
+          erklaerung: 'Der Cutter schneidet Pfade und Grundformen (rect, circle, ellipse, line, polyline, polygon, path). Text und Bilder werden nicht geschnitten.',
+        },
+        fuellung: {
+          titel: 'Füllungen werden ignoriert',
+          befund: (n: number) => `${n} ${n === 1 ? 'Form ist' : 'Formen sind'} gefüllt. Geschnitten wird trotzdem nur der Rand.`,
+          ok: 'Keine Füllungen – so sieht man schon, was geschnitten wird.',
+          erklaerung: 'Ein Cutter kennt keine Farben und keine Flächen. Er fährt nur die Kontur einer Form ab. Ob die Form innen schwarz, rot oder leer ist, spielt für den Schnitt keine Rolle. Die Cutter-Ansicht zeigt genau das.',
+        },
+        offen: {
+          titel: 'Offene und geschlossene Pfade',
+          befund: (n: number, gefuellt?: number) =>
+            `${n} ${n === 1 ? 'Pfad ist' : 'Pfade sind'} offen` +
+            (gefuellt ? `, davon ${gefuellt} gefüllt gezeichnet – ${gefuellt === 1 ? 'diese Form fällt' : 'diese Formen fallen'} nach dem Schnitt nicht heraus.` : '. Für Linien mit dem Stift ist das in Ordnung.'),
+          ok: 'Alle Pfade sind geschlossen.',
+          erklaerung: 'Ein geschlossener Pfad endet dort, wo er beginnt (meist mit Z). Nur dann ist ein Teil rundherum ausgeschnitten und lässt sich herauslösen. Ein offener Pfad ist ein Schnitt mit Anfang und Ende – praktisch für Falzlinien oder zum Zeichnen mit dem Stift.',
+        },
+        fastGeschlossen: {
+          titel: 'Fast geschlossen',
+          befund: (n: number, luecke?: number) =>
+            `${n} ${n === 1 ? 'Pfad endet' : 'Pfade enden'} knapp neben dem Anfang (Lücke bis ${(luecke ?? 0).toFixed(2).replace('.', ',')} mm). Das Teil hängt dort noch fest.`,
+          ok: 'Keine fast geschlossenen Pfade.',
+          erklaerung: 'Wenn Anfang und Ende eines Pfads nur fast zusammentreffen, bleibt ein winziger Steg stehen. Abhilfe: den Pfad mit Z schließen oder den letzten Punkt genau auf den ersten legen.',
+        },
+        loecher: {
+          titel: 'Löcher werden zuerst geschnitten',
+          befund: (n: number) => `${n} ${n === 1 ? 'Kontur liegt' : 'Konturen liegen'} in einer anderen (Loch). Sie ${n === 1 ? 'wird' : 'werden'} vor der äußeren Kontur geschnitten.`,
+          ok: 'Keine Löcher.',
+          erklaerung: 'Bei einem „O“ gibt es eine äußere und eine innere Kontur. Schneidet man zuerst außen, kann sich das Teil lösen oder verrutschen, bevor das Loch fertig ist. Darum schneidet man immer von innen nach außen. Die Simulation zeigt die Reihenfolge.',
+        },
+        inseln: {
+          titel: 'Inseln bei Schablonen',
+          befund: (n: number) => `Als Schablone geschnitten, ${n === 1 ? 'fällt 1 Insel' : `fallen ${n} Inseln`} heraus – zum Beispiel das Innere eines „O“.`,
+          ok: 'Keine Inseln – als Schablone bleibt alles zusammen.',
+          erklaerung: 'Bei einer Schablone (z. B. zum Sprühen) schneidet man die Formen aus dem Material heraus. Was innerhalb eines Lochs liegt, hängt dann an nichts mehr und fällt heraus. Schablonenschriften setzen deshalb kleine Brücken. Automatische Brücken kommen in Stufe 4.',
+        },
+        doppelt: {
+          titel: 'Doppelte Linien',
+          befund: (n: number) => `${n} ${n === 1 ? 'Teilstück liegt' : 'Teilstücke liegen'} genau auf einem anderen und ${n === 1 ? 'wird' : 'werden'} zweimal geschnitten.`,
+          ok: 'Keine doppelten Linien.',
+          erklaerung: 'Liegen zwei Linien übereinander, fährt das Messer dieselbe Stelle zweimal. Das kostet Zeit und kann das Material zerfasern oder ganz durchtrennen. Geprüft wird auf dem Raster des Cutters (0,05 mm).',
+        },
+        winzig: {
+          titel: 'Winzige Teilstücke',
+          befund: (n: number) => `${n} ${n === 1 ? 'Teilstück ist' : 'Teilstücke sind'} kürzer als 0,1 mm.`,
+          ok: 'Keine winzigen Teilstücke.',
+          erklaerung: 'Der Cutter bewegt sich in Schritten von 0,05 mm. Noch kürzere Stücke kann er gar nicht fahren; sehr kurze Stücke entstehen oft durch doppelte Punkte. Sie stören nicht immer, machen den Schnitt aber unruhig.',
+        },
+        ausserhalbMatte: {
+          titel: 'Außerhalb der Matte',
+          befund: (n: number) => `${n} ${n === 1 ? 'Pfad ragt' : 'Pfade ragen'} über den Schneidebereich hinaus.`,
+          ok: 'Alles liegt im Schneidebereich.',
+          erklaerung: 'Der Cutter kann nur innerhalb seines Schneidebereichs arbeiten. Was darüber hinausragt, wird beim Senden abgelehnt. Gemessen wird ab der oberen linken Ecke, y zeigt nach unten.',
+        },
+        ausserhalbDokument: {
+          titel: 'Außerhalb des Dokuments',
+          befund: (n: number) => `${n} ${n === 1 ? 'Pfad liegt' : 'Pfade liegen'} teilweise außerhalb der Dokumentfläche (width × height).`,
+          ok: 'Alles liegt im Dokument.',
+          erklaerung: 'Was außerhalb von width × height liegt, zeigt ein Browser nicht an – der Cutter würde es aber schneiden. Das passiert leicht mit negativen Koordinaten oder einem transform.',
+        },
+      } as Record<string, { titel: string; befund: (n: number, wert?: number) => string; ok: string; erklaerung: string }>,
+    },
     svg: {
       breite: 'Breite (mm)',
       hoehe: (mm: number) => `Höhe: ${mm.toFixed(1).replace('.', ',')} mm`,
@@ -220,6 +324,7 @@ export const de = {
       positionY: 'Abstand oben (mm)',
       code: 'SVG-Code',
       herunterladenSvg: 'SVG herunterladen',
+      inWerkstatt: 'In der SVG-Werkstatt bearbeiten',
       herunterladenDxf: 'DXF herunterladen (für Silhouette Studio)',
       kopieren: 'Code kopieren',
       kopiert: 'Kopiert',
@@ -232,6 +337,13 @@ export const de = {
         C: (von: string, c1: string, c2: string, p: string) =>
           `C – kubische Bézier-Kurve von ${von} nach ${p}, gezogen von den Kontrollpunkten ${c1} und ${c2}.`,
         Z: (von: string, p: string) => `Z – Teilpfad schließen: gerade zurück von ${von} zum Anfang ${p}.`,
+        H: (von: string, p: string) => `H – waagerechte Strecke von ${von} nach ${p}. Nur x ändert sich.`,
+        V: (von: string, p: string) => `V – senkrechte Strecke von ${von} nach ${p}. Nur y ändert sich.`,
+        S: (von: string, c1: string, c2: string, p: string) =>
+          `S – glatte Bézier-Kurve von ${von} nach ${p}. Der erste Kontrollpunkt ${c1} ist der gespiegelte vorige, der zweite ist ${c2}.`,
+        Q: (von: string, c: string, p: string) => `Q – quadratische Bézier-Kurve von ${von} nach ${p} mit einem Kontrollpunkt ${c}.`,
+        A: (von: string, p: string, stuecke: number) =>
+          `A – Ellipsenbogen von ${von} nach ${p}. Für den Schnitt in ${stuecke} ${stuecke === 1 ? 'Bézier-Kurve' : 'Bézier-Kurven'} umgerechnet.`,
         sonst: (name: string) =>
           name === 'Z' ? 'Z – Teilpfad schließen. Der letzte Punkt liegt schon am Anfang, es kommt keine Linie dazu.' : name,
       },
@@ -257,7 +369,7 @@ export const de = {
     quellcode: 'Quellcode',
     gplVolltext: 'Volltext der GPL-2.0',
     fremdTitel: 'Verwendete Bibliotheken',
-    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft.',
+    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft; alle stehen unter der MIT-Lizenz und sind mit der GPL vereinbar.',
     lizenztext: 'Lizenztext',
     uebernommenTitel: 'Übernommenes Wissen und übernommener Code',
     uebernommenText:

@@ -8,12 +8,13 @@ import { formAnPunkt } from '../../pipeline/geometrie';
 import { istGerade, type Bezierpfad } from '../../pipeline/glaetten';
 import { FALL_SEGMENTE, kantenmitte, zellenMitKontur } from '../../pipeline/konturen';
 import { svgZahl, teilpfad } from '../../pipeline/svg-erzeugen';
-import { leseSvg } from '../../svg/dokument';
-import { befehlsGeometrie, naechsterBefehl, type BefehlsGeometrie } from '../../svg/pfad';
+import { leseSvg, zeichenDaten } from '../../svg/dokument';
+import { befehlsGeometrie, naechsterBefehl } from '../../svg/pfad';
+import { befehlErklaerung, Befehlsmarkierung } from '../svgansicht';
 import { t } from '../../i18n/de';
 import { Bildansicht } from '../Bildansicht';
 import { ausBinaerbild } from '../raster';
-import { auswahlForm, einstellungen, ergebnis, geladen, setze } from '../zustand';
+import { auswahlForm, bereich, einstellungen, ergebnis, geladen, setze } from '../zustand';
 import { Erklaerung, Kasten, Regler, Schalter, Schrittansicht, vieleckD } from './Bausteine';
 
 const tx = t.app;
@@ -363,18 +364,6 @@ const markiert = signal<Markierung | null>(null);
 /** Abschnitte des Codetexts: normaler Text, Pfad-Element und darin einzelne Befehle */
 type Codeteil = { text: string; pfad?: number; befehl?: number };
 
-const pkt = (p: Punkt) => `(${svgZahl(p.x)} | ${svgZahl(p.y)})`;
-
-function befehlErklaerung(typ: string, g: BefehlsGeometrie | undefined): string {
-  const b = tx.svg.befehl;
-  if (!g) return b.sonst(typ);
-  if (g.art === 'punkt') return b.M(pkt(g.p));
-  // Z zeichnet eine Strecke zurück zum Anfang des aktuellen Teilpfads; dieser Anfang ist g.p.
-  if (typ === 'Z' && g.art === 'strecke') return b.Z(pkt(g.von), pkt(g.p));
-  if (g.art === 'strecke') return b.L(pkt(g.von), pkt(g.p));
-  return b.C(pkt(g.von), pkt(g.c1), pkt(g.c2), pkt(g.p));
-}
-
 export function Schritt8() {
   const r = ergebnis.value;
   const e = einstellungen.value;
@@ -391,7 +380,8 @@ export function Schritt8() {
     dok.pfade.forEach((p, pi) => {
       t.push({ text: text.slice(pos, p.element.start) });
       let q = p.element.start;
-      p.befehle.forEach((b, bi) => {
+      // Bei umgerechneten Formen liegen die Befehle nicht im Dokumenttext
+      if (!p.umgerechnet) p.befehle.forEach((b, bi) => {
         if (b.start > q) t.push({ text: text.slice(q, b.start), pfad: pi });
         t.push({ text: text.slice(b.start, b.ende), pfad: pi, befehl: bi });
         q = b.ende;
@@ -424,7 +414,7 @@ export function Schritt8() {
           <line y1={i * 10} y2={i * 10} x1={0} x2={dok.breiteMm} class="raster-linie" />
         ))}
         {dok.pfade.map((p, i) => {
-          const d = p.element.attribute.find((a) => a.name === 'd')!.wert;
+          const d = zeichenDaten(text, p);
           return (
             <path
               d={d}
@@ -511,6 +501,7 @@ export function Schritt8() {
           </Kasten>
           <Kasten>
             <div class="knoepfe senkrecht">
+              <button onClick={() => (bereich.value = 'werkstatt')}>{tx.svg.inWerkstatt}</button>
               <button onClick={() => speichereText(text, 'vom-pixel-zum-schnitt.svg', 'image/svg+xml')}>{tx.svg.herunterladenSvg}</button>
               <button onClick={() => speichereText(svgZuDxf(text).dxf, 'vom-pixel-zum-schnitt.dxf', 'application/dxf')}>
                 {tx.svg.herunterladenDxf}
@@ -533,18 +524,3 @@ export function Schritt8() {
   );
 }
 
-/** Hebt hervor, was ein einzelner Befehl zeichnet; bei Kurven mit Kontrollpunkten. */
-function Befehlsmarkierung(props: { g: BefehlsGeometrie }) {
-  const g = props.g;
-  if (g.art === 'punkt') return <circle cx={g.p.x} cy={g.p.y} r={1.2} class="befehl-punkt" />;
-  if (g.art === 'strecke') return <line x1={g.von.x} y1={g.von.y} x2={g.p.x} y2={g.p.y} class="befehl-linie" />;
-  return (
-    <g>
-      <line x1={g.von.x} y1={g.von.y} x2={g.c1.x} y2={g.c1.y} class="befehl-hebel" />
-      <line x1={g.p.x} y1={g.p.y} x2={g.c2.x} y2={g.c2.y} class="befehl-hebel" />
-      <path d={`M${g.von.x} ${g.von.y}C${g.c1.x} ${g.c1.y} ${g.c2.x} ${g.c2.y} ${g.p.x} ${g.p.y}`} class="befehl-linie" />
-      <circle cx={g.c1.x} cy={g.c1.y} r={0.7} class="befehl-kontrolle" />
-      <circle cx={g.c2.x} cy={g.c2.y} r={0.7} class="befehl-kontrolle" />
-    </g>
-  );
-}

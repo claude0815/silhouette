@@ -642,3 +642,335 @@
   padding: 0.3rem 0.5rem;
   vertical-align: top;
 }
+
+/* ---- Bereiche ---- */
+.bereichsleiste {
+  display: flex;
+  gap: 0.25rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid #334155;
+}
+.bereich-knopf {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bereich-knopf.aktiv {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* ---- SVG-Werkstatt ---- */
+.werkstatt {
+  display: grid;
+  grid-template-columns: minmax(320px, 38%) 1fr 340px;
+  height: 100%;
+  min-height: 0;
+}
+.werkstatt-code {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid #e2e8f0;
+}
+.werkzeugleiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.4rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.werkzeugleiste button {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.85rem;
+}
+.werkzeugleiste .quelle {
+  flex-basis: 100%;
+}
+.editor {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.editor .cm-editor {
+  height: 100%;
+  font-size: 0.85rem;
+}
+.cm-fehler {
+  text-decoration: wavy underline #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+.cm-hinweis {
+  text-decoration: dotted underline #d97706;
+}
+.cm-element {
+  background: rgba(245, 158, 11, 0.15);
+}
+.cm-befehl {
+  background: #f59e0b;
+  color: #0f172a;
+}
+.hinweisliste {
+  max-height: 25%;
+  overflow-y: auto;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+.hinweisliste ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.hinweisliste li.h-fehler {
+  color: #b91c1c;
+}
+.hinweisliste li.h-hinweis {
+  color: #92400e;
+}
+.verweis {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  text-decoration: underline dotted;
+  font: inherit;
+}
+.werkstatt-vorschau {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.vorschau-leiste {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.vorschau-leiste .knoepfe {
+  margin: 0;
+}
+.vorschau-flaeche {
+  flex: 1;
+  overflow: auto;
+  background: #e2e8f0;
+  padding: 0.75rem;
+}
+.vorschau-flaeche svg {
+  display: block;
+  height: auto;
+  touch-action: none;
+}
+.vorschau-flaeche .dokument {
+  fill: #fff;
+}
+.lineal-grund {
+  fill: #f8fafc;
+}
+.lineal-strich {
+  stroke: #64748b;
+  stroke-width: 0.15;
+}
+.lineal-zahl,
+.lineal-einheit {
+  font-size: 2.6px;
+  fill: #475569;
+  font-family: system-ui, sans-serif;
+}
+.ursprung-punkt {
+  fill: #dc2626;
+}
+.wf {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.2px;
+}
+.wf-gruppe {
+  cursor: pointer;
+}
+.wf-treffer {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+}
+.wf-cutter {
+  fill: none;
+  stroke: #dc2626;
+  stroke-width: 1.5px;
+}
+.wf-hervor {
+  stroke: #f59e0b !important;
+  stroke-width: 3px;
+}
+.wf-markierung .befehl-linie {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 4px;
+}
+.wf-markierung .befehl-hebel {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.5px;
+}
+.griff-hebel {
+  stroke: #2563eb;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1px;
+}
+.griff-punkt {
+  fill: #2563eb;
+  stroke: #fff;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.5px;
+  cursor: grab;
+}
+.griff-kontrolle {
+  fill: #fff;
+  stroke: #2563eb;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 2px;
+  cursor: grab;
+}
+.befund-stelle {
+  fill: rgba(220, 38, 38, 0.25);
+  stroke: #dc2626;
+  stroke-width: 0.3;
+  pointer-events: none;
+}
+.werkstatt-seite {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.reiter {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+}
+.reiter button {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.85rem;
+  border-bottom: 3px solid transparent;
+}
+.reiter button.aktiv {
+  border-bottom-color: #0f172a;
+  font-weight: 600;
+}
+.reiter-inhalt {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+}
+.befehlsliste {
+  padding-left: 1.6rem;
+  margin: 0.25rem 0;
+  font-size: 0.82rem;
+}
+.befehlsliste li {
+  padding: 0.2rem 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.befehlsliste li code {
+  display: block;
+  font-weight: 600;
+}
+.befehlsliste li.aktiv,
+.befehlsliste li:hover {
+  background: #fef3c7;
+}
+.befunde {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.befund {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.3rem;
+  padding: 0.4rem;
+  border-radius: 6px;
+  margin-bottom: 0.3rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+}
+.befund p {
+  margin: 0.2rem 0;
+}
+.befund .symbol {
+  font-size: 1.1rem;
+  text-align: center;
+}
+.befund.ok .symbol {
+  color: #15803d;
+}
+.befund.info .symbol {
+  color: #2563eb;
+}
+.befund.warnung {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+.befund.warnung .symbol {
+  color: #d97706;
+}
+.befund details summary {
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.beispielkarte {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.beispielkarte.aktiv {
+  border-color: #0f172a;
+}
+.beispielkarte header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.beispielkarte header button {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+}
+.beispielkarte p {
+  margin: 0.3rem 0;
+}
+.aufgaben {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+.aufgaben li {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr;
+  gap: 0.3rem;
+  padding: 0.3rem 0;
+  border-top: 1px solid #f1f5f9;
+}
+.aufgaben .haken {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+.aufgaben li.geloest .haken,
+.geschafft {
+  color: #15803d;
+  font-weight: 600;
+}
