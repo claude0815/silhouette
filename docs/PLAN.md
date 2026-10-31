@@ -79,8 +79,20 @@ src/
 - **Stufe 0:** im selben Repo als eigene Seite `cutter-test.html`, mit auf GitHub Pages veröffentlicht.
 - **Cutter an der Schule:** Cameo 4 / 4 Plus / Pro, Cameo 5 / 5 Plus, Portrait 3 / 4. Für alle drei Familien Geräteprofile anlegen und im Machbarkeitstest prüfen.
 - **Potrace:** erst nach Stufe 1, als eigener Schritt mit Vergleichsansicht.
+- **Software an der Schule:** Silhouette Studio 5. Die Edition (Basic, Designer, …) ist noch zu klären; bis dahin gilt DXF als sicherer Weg.
+
+## Vorarbeiten ohne Gerät
+
+Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, was sich ohne Cutter bauen und prüfen lässt, damit vor Ort nur noch geklickt, gemessen und protokolliert werden muss.
+
+1. **Protokoll recherchieren:** Befehle, Statusantworten, USB-Produkt-IDs und Bluetooth-UUIDs aus inkscape-silhouette und robocut zusammentragen, mit Quellenangabe in `docs/protokoll.md`.
+2. **Cutter-Schnittstelle und GPGL-Modul:** `Cutter`, `CutJob`, `jobToGpgl()` mit Snapshot-Tests; Geräteprofile für Cameo 4, Cameo 5, Portrait 3/4.
+3. **`SimulatedCutter`:** verhält sich nach außen wie ein echtes Gerät (Status, Senden, Abbruch).
+4. **Testseite fertig bauen:** WebUSB- und Bluetooth-Verbindung, Statusabfrage, Testquadrat, Abbruch, Protokollfenster mit Kopieren, eingebaute Checkliste. Die Transportschicht wird gegen eine nachgebildete `USBDevice`-Schnittstelle getestet.
+5. **DXF-Export vorziehen:** Testquadrat und einige Formen als DXF erzeugen. Das lässt sich ohne Cutter in Silhouette Studio auf jedem PC prüfen (Maße, geschlossene Pfade).
+6. **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
 
 ## Noch offen
 
-- Welche Studio-Edition (Basic oder Designer) ist an der Schule installiert?
+- Welche Edition von Silhouette Studio 5 (Basic, Designer, Designer Plus, Business) ist installiert? Steht im Menü „Hilfe“ bzw. in der Titelleiste.
 - Bluetooth-UUIDs und Ablauf: aus inkscape-silhouette ermitteln, bevor `bluetooth.ts` entsteht.
