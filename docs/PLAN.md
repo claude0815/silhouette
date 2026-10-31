@@ -58,7 +58,7 @@ src/
 ### Reihenfolge der Umsetzung
 
 1. **Projekt-Setup** (Vite, TypeScript, Vitest, ESLint/Prettier, Pages-Deployment, LICENSE).
-2. **Algorithmen als reine Funktionen** mit Tests und deutschen Kommentaren: Graustufen → Histogramm/Otsu → Schwellwert → Entrauschen → Marching Squares → Douglas-Peucker → Bézier → SVG.
+2. ✅ **Algorithmen als reine Funktionen** mit Tests und deutschen Kommentaren: Graustufen → Histogramm/Otsu → Schwellwert → Entrauschen → Marching Squares → Douglas-Peucker → Bézier → SVG.
 3. **Web Worker** und Übertragung der Zwischenstände (Transferable `ArrayBuffer`, kein SharedArrayBuffer).
 4. **Oberfläche der Pipeline:** Bild laden (Drag & Drop, Zuschnitt), pro Schritt eine Ansicht mit Reglern und Datenansicht (Pixelwerte, 0/1-Matrix, Punktliste), aufklappbare Erklärung.
 5. **SVG-Dokument und verknüpfte Ansicht:** Code (zunächst nur lesbar, editierbar erst in Stufe 2) neben der Grafik, Hover/Klick markiert in beide Richtungen.
@@ -66,6 +66,12 @@ src/
 7. **Export:** SVG und DXF, Zwischenstände als PNG/CSV/JSON.
 8. **Seite „Über und Lizenzen“** mit Link zum Quellcode.
 9. **Leistung prüfen:** Bild 2000 × 2000 px ohne spürbare Wartezeit (Messung im Test bzw. per Benchmark-Skript).
+
+### Stand der Algorithmen (31.10.2026)
+
+- Dateien in `src/pipeline/` (deutsche Namen statt der Platzhalter oben): `bilder.ts`, `graustufen.ts`, `schwellwert.ts`, `entrauschen.ts`, `konturen.ts`, `vereinfachen.ts`, `glaetten.ts`, `svg-erzeugen.ts`.
+- Nachbarschaft: Vordergrund 4er, Hintergrund 8er; Marching Squares trennt Sattelfälle passend dazu. Löcher werden über die Bereichsnummer ihrer Außenkontur zugeordnet.
+- Laufzeit bei 2000 × 2000 Pixeln (Node, ohne Worker): Graustufen bis Konturen zusammen etwa 0,7 s.
 
 ### Testansatz
 
@@ -90,7 +96,7 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 3. ✅ **`SimulatedCutter`:** verhält sich nach außen wie ein echtes Gerät (Status, Senden, Abbruch).
 4. ✅ **Testseite fertig bauen:** WebUSB- und Bluetooth-Verbindung, Statusabfrage, Testquadrat, Abbruch, Protokollfenster mit Kopieren, eingebaute Checkliste. Die Transportschichten werden gegen nachgebildete USB- und Bluetooth-Geräte getestet; eine Simulation macht die Seite auch ohne Cutter vorführbar.
 5. ✅ **DXF-Export vorziehen:** Testquadrat und einige Formen als DXF erzeugen. Das lässt sich ohne Cutter in Silhouette Studio auf jedem PC prüfen (Maße, geschlossene Pfade). Zwei Varianten (Polylinien und Einzellinien) auf der Testseite; mit ezdxf gegengeprüft.
-6. **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
+6. ✅ **Stufe 1 beginnen:** Die Pipeline-Algorithmen hängen nicht am Gerät.
 
 ## Noch offen
 
