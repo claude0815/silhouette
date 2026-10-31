@@ -21,3 +21,170 @@ code {
 .fehlt {
   color: #b91c1c;
 }
+
+/* ---- Testseite ---- */
+.cutter-test section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+.cutter-test h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+button {
+  font: inherit;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #94a3b8;
+  background: #f1f5f9;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+button.abbrechen {
+  background: #dc2626;
+  border-color: #b91c1c;
+  color: #fff;
+  font-weight: bold;
+  padding: 0.6rem 1.6rem;
+}
+.knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.zeile {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.hinweis {
+  background: #f1f5f9;
+  border-left: 4px solid #64748b;
+  padding: 0.4rem 0.75rem;
+}
+.hinweis.warnung {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+.fehlermeldung {
+  border-left: 4px solid #b91c1c;
+  background: #fef2f2;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+}
+.fehlermeldung p {
+  margin: 0.25rem 0 0;
+}
+.klein {
+  font-size: 0.85rem;
+  color: #475569;
+}
+.geraet dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 1rem;
+}
+.geraet dd {
+  margin: 0;
+}
+.raster {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 1.5rem;
+}
+.formular {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem 1rem;
+}
+.formular label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+.formular input,
+.formular select,
+textarea {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+}
+.mattenvorschau {
+  margin: 0;
+}
+.mattenvorschau svg {
+  width: 100%;
+  max-height: 260px;
+}
+.mattenvorschau .matte {
+  fill: #e0f2fe;
+  stroke: #0369a1;
+  stroke-width: 1;
+}
+.mattenvorschau .quadrat {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 1.5;
+}
+.mattenvorschau .ursprung {
+  fill: #0369a1;
+}
+.mattenvorschau figcaption {
+  font-size: 0.85rem;
+  color: #475569;
+}
+pre.befehle,
+pre.protokoll {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.75rem;
+  border-radius: 6px;
+  max-height: 320px;
+  overflow: auto;
+  font-size: 0.85rem;
+}
+.protokoll .gesendet {
+  color: #93c5fd;
+}
+.protokoll .empfangen {
+  color: #86efac;
+}
+.protokoll .fehler {
+  color: #fca5a5;
+}
+.protokoll .info {
+  color: #cbd5e1;
+}
+.checkliste li {
+  margin-bottom: 0.6rem;
+}
+.checkliste textarea {
+  width: 100%;
+  margin-top: 0.2rem;
+  box-sizing: border-box;
+}
+.testformen {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+}
+.testformen .flaeche {
+  fill: #f8fafc;
+  stroke: #cbd5e1;
+  stroke-width: 0.5;
+}
+.testformen path {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 0.6;
+}
+.cutter-test h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
