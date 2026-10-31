@@ -35,6 +35,7 @@ Die vollständigen Anforderungen stehen in `docs/ANFORDERUNGEN.md`. Lies sie vor
 - Preact mit `@preact/signals`, TypeScript, Vite, Vitest.
 - `index.html` → `src/app/`: die App. `cutter-test.html` → `src/cutter-test/`: Testseite Stufe 0.
 - `src/i18n/de.ts`: alle Texte der Oberfläche.
+- `src/cutter/`: Cutter-Schnittstelle (`types.ts`), Geräteprofile (`profile.ts`), reine GPGL-Übersetzung (`gpgl.ts`), Transportschicht (`transport.ts`), gemeinsamer Treiber `GpglCutter` und `SimulatedCutter`. Protokoll und Quellen: `docs/protokoll.md`.
 - Tests liegen neben dem Code als `*.test.ts`.
 - `.github/workflows/deploy.yml`: Tests und Build bei jedem Push, Deployment auf GitHub Pages nur von `main`.
 - Plan und Entscheidungen: `docs/PLAN.md`.
