@@ -30,8 +30,10 @@ export interface Bereich {
  * nächste Pixel ohne Nummer dran.
  *
  * Rückgabe: die Bereiche und je Pixel die Nummer seines Bereichs.
+ * Mit `nurWert` werden nur Bereiche dieser Farbe gesucht; die anderen Pixel behalten −1.
+ * Das spart viel Zeit, wenn man z. B. nur die Vordergrund-Flecken braucht.
  */
-export function findeBereiche(bild: Binaerbild): { bereiche: Bereich[]; nummer: Int32Array } {
+export function findeBereiche(bild: Binaerbild, nurWert?: 0 | 1): { bereiche: Bereich[]; nummer: Int32Array } {
   const { breite: b, hoehe: h, daten } = bild;
   const nummer = new Int32Array(b * h).fill(-1);
   const bereiche: Bereich[] = [];
@@ -40,6 +42,7 @@ export function findeBereiche(bild: Binaerbild): { bereiche: Bereich[]; nummer: 
   for (let start = 0; start < daten.length; start++) {
     if (nummer[start] !== -1) continue;
     const wert = daten[start] as 0 | 1;
+    if (nurWert !== undefined && wert !== nurWert) continue;
     const acht = wert === 0; // Hintergrund mit 8er-Nachbarschaft
     const n = bereiche.length;
     let flaeche = 0;
@@ -109,10 +112,14 @@ export function entrausche(bild: Binaerbild, mindestflaeche: number): EntrauschE
 
   /** Setzt alle Pixel der ausgewählten Bereiche auf `neu`. */
   const ersetze = (quelle: Binaerbild, auswahl: (b: Bereich) => boolean, neu: 0 | 1) => {
-    const { bereiche, nummer } = findeBereiche(quelle);
+    // Gesucht werden nur Bereiche der Farbe, die ersetzt werden soll.
+    const { bereiche, nummer } = findeBereiche(quelle, neu === 0 ? 1 : 0);
     const gewaehlt = bereiche.map(auswahl);
     const daten = quelle.daten.slice();
-    for (let i = 0; i < daten.length; i++) if (gewaehlt[nummer[i]!]) daten[i] = neu;
+    for (let i = 0; i < daten.length; i++) {
+      const n = nummer[i]!;
+      if (n !== -1 && gewaehlt[n]) daten[i] = neu;
+    }
     return { daten, gewaehlt: bereiche.filter((_, k) => gewaehlt[k]) };
   };
 

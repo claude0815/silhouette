@@ -178,8 +178,8 @@ export function findeKonturen(bild: Binaerbild): Kontur[] {
     }
   }
 
-  // Bereichsnummern, um Löcher ihrer Außenkontur zuzuordnen
-  const bereichVon = findeBereiche(bild).nummer;
+  // Nummern der Vordergrund-Bereiche, um Löcher ihrer Außenkontur zuzuordnen
+  const bereichVon = findeBereiche(bild, 1).nummer;
 
   // 2. Teilstücken folgen
   const besucht = new Uint8Array(groesse);

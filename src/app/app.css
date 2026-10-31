@@ -1,0 +1,413 @@
+/* ---- Grundgerüst der App ---- */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #0f172a;
+  color: #f8fafc;
+}
+.kopf h1 {
+  font-size: 1.1rem;
+  margin: 0;
+  white-space: nowrap;
+}
+.schrittleiste {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+  overflow-x: auto;
+}
+.schritt-knopf {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  padding: 0.25rem 0.6rem;
+  min-width: 7.2rem;
+  line-height: 1.2;
+}
+.schritt-knopf .nummer {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+.schritt-knopf .name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.schritt-knopf .zeit {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+.schritt-knopf.aktiv {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #f8fafc;
+}
+.status {
+  min-width: 6rem;
+  text-align: right;
+}
+.rechnet {
+  color: #fbbf24;
+}
+.inhalt {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.fuss {
+  padding: 0.25rem 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+.app > .fehlermeldung {
+  margin: 0;
+}
+
+/* ---- Startseite und Ablage ---- */
+.start {
+  max-width: 640px;
+  margin: 3rem auto;
+  text-align: center;
+}
+.einleitung {
+  font-size: 1.2rem;
+}
+.ablage {
+  border: 2px dashed #94a3b8;
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  background: #fff;
+}
+.ablage.aktiv {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+.ablage .knoepfe {
+  justify-content: center;
+}
+.knoepfe.senkrecht {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ---- Schrittansicht ---- */
+.schrittansicht {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  height: 100%;
+  min-height: 0;
+}
+.haupt {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.seite {
+  overflow-y: auto;
+  padding: 0.75rem;
+  border-left: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.kasten {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.kasten h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+.kasten p {
+  margin: 0.4rem 0;
+}
+.regler {
+  display: grid;
+  grid-template-columns: 1fr 4.5rem;
+  gap: 0.1rem 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+.regler span {
+  grid-column: 1 / -1;
+}
+.regler input[type='range'] {
+  min-width: 0;
+}
+.regler input[type='number'] {
+  font: inherit;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.schalter {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0.3rem 0;
+}
+.erklaerung {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+.erklaerung summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.legende {
+  font-size: 0.85rem;
+}
+.farbfeld {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.farbfeld.fleck {
+  background: #e63946;
+}
+.farbfeld.loch {
+  background: #2563eb;
+}
+.farbfeld.aussen {
+  background: #dc2626;
+}
+.farbfeld.innen {
+  background: #2563eb;
+}
+
+/* ---- Bildansicht ---- */
+.bildansicht-huelle {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.bildansicht {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background: repeating-conic-gradient(#e2e8f0 0 25%, #f1f5f9 0 50%) 0 0 / 16px 16px;
+  cursor: crosshair;
+  touch-action: none;
+}
+.bildansicht-inhalt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.bildansicht-inhalt canvas,
+.ueberlagerung {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.pixelig {
+  image-rendering: pixelated;
+}
+.ueberlagerung {
+  overflow: visible;
+  pointer-events: none;
+}
+.pixelrahmen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  box-sizing: border-box;
+  border: solid #f59e0b;
+  pointer-events: none;
+}
+.bildansicht-fuss {
+  padding: 0.2rem 0.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ---- Datenansichten ---- */
+.pixelraster {
+  border-collapse: collapse;
+  font: 0.68rem/1.1 ui-monospace, Menlo, Consolas, monospace;
+  margin: 0.25rem 0 0.5rem;
+}
+.pixelraster td {
+  width: 2.3rem;
+  height: 2.3rem;
+  text-align: center;
+  white-space: pre;
+  border: 1px solid #cbd5e1;
+  padding: 0;
+}
+.pixelraster td.dunkel {
+  color: #f8fafc;
+}
+.pixelraster td.hell {
+  color: #0f172a;
+}
+.pixelraster td.mitte {
+  outline: 3px solid #f59e0b;
+  outline-offset: -2px;
+}
+.pixelraster td.aussen {
+  background: repeating-linear-gradient(45deg, #f1f5f9 0 3px, #e2e8f0 3px 6px);
+}
+.histogramm {
+  width: 100%;
+  height: 120px;
+  cursor: pointer;
+}
+.otsu-linie {
+  stroke: #16a34a;
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+.schwell-linie {
+  stroke: #dc2626;
+  stroke-width: 1.5;
+}
+.punktliste {
+  font: 0.8rem ui-monospace, Menlo, Consolas, monospace;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-left: 2.5rem;
+  margin: 0.25rem 0;
+}
+
+/* ---- Überlagerungen ---- */
+.kontur-aussen {
+  fill: none;
+  stroke: #dc2626;
+}
+.kontur-innen {
+  fill: none;
+  stroke: #2563eb;
+}
+.kontur-roh {
+  fill: none;
+  stroke: #94a3b8;
+}
+.kontur-vereinfacht,
+.kurve {
+  fill: none;
+  stroke: #dc2626;
+}
+.ausgewaehlt {
+  stroke: #f59e0b;
+}
+.kontur-gestrichelt {
+  fill: none;
+  stroke: #64748b;
+}
+.punkt-marker {
+  fill: #0f172a;
+}
+.kontrollpunkt {
+  fill: #fff;
+  stroke: #2563eb;
+  stroke-width: 0.5;
+}
+.hebel {
+  stroke: #2563eb;
+}
+.ausschnitt {
+  fill: none;
+  stroke: #f59e0b;
+}
+
+/* ---- Marching-Squares-Animation ---- */
+.ms-flaeche {
+  width: 100%;
+  background: #fff;
+}
+.ms-vorne {
+  fill: #475569;
+  stroke: #cbd5e1;
+  stroke-width: 0.02;
+}
+.ms-hinten {
+  fill: #fff;
+  stroke: #e2e8f0;
+  stroke-width: 0.02;
+}
+.ms-ecke-voll {
+  fill: #f8fafc;
+}
+.ms-ecke-leer {
+  fill: #94a3b8;
+}
+.ms-zelle {
+  fill: rgba(245, 158, 11, 0.35);
+  stroke: #f59e0b;
+  stroke-width: 0.06;
+}
+.ms-segment {
+  stroke: #dc2626;
+  stroke-width: 0.12;
+  stroke-linecap: round;
+}
+.ms-pfeil {
+  fill: #dc2626;
+}
+
+/* ---- SVG-Schritt ---- */
+.svg-teilung {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+  min-height: 0;
+}
+.svg-vorschau {
+  padding: 1rem;
+  overflow: auto;
+  background: #e2e8f0;
+}
+.svg-vorschau svg {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+.svg-vorschau .dokument {
+  fill: #fff;
+}
+.raster-linie {
+  stroke: #e2e8f0;
+  stroke-width: 0.2;
+}
+.svg-form {
+  fill: #0f172a;
+  cursor: pointer;
+}
+.svg-form.markiert {
+  fill: #f59e0b;
+}
+.svg-code {
+  margin: 0;
+  overflow: auto;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  padding: 0.75rem;
+}
+.code-zeile {
+  white-space: pre-wrap;
+  word-break: break-all;
+  border-left: 3px solid transparent;
+  padding-left: 0.4rem;
+}
+.code-zeile.markiert {
+  background: #78350f;
+  border-left-color: #f59e0b;
+}

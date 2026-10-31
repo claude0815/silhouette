@@ -7,7 +7,7 @@
 body {
   margin: 0;
 }
-main {
+main.cutter-test {
   max-width: 960px;
   margin: 0 auto;
   padding: 2rem;

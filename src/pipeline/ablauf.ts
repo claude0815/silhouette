@@ -43,11 +43,11 @@ export const STANDARD: Einstellungen = {
   schwelle: 128,
   invertieren: false,
   entrauschen: true,
-  mindestflaeche: 10,
+  mindestflaeche: 30,
   toleranz: 1,
   glaetten: true,
   staerke: 1,
-  eckenWinkel: 70,
+  eckenWinkel: 50,
   breiteMm: 100,
   positionXMm: 10,
   positionYMm: 10,
@@ -104,6 +104,27 @@ export interface Ergebnis {
   svg: SvgErgebnis;
   /** Rechenzeit je Schritt in ms */
   zeiten: Record<number, number>;
+}
+
+/** Welche Teile des Ergebnisses gehören zu welchem Schritt? (Für die Übertragung aus dem Worker.) */
+export const FELDER_JE_SCHRITT: Record<number, readonly (keyof Ergebnis)[]> = {
+  1: ['bild'],
+  2: ['grau', 'formel'],
+  3: ['histogramm', 'otsuSchwelle', 'schwelle', 'binaer'],
+  4: ['entrauscht', 'geaendert', 'entfernteFlecken', 'gefuellteLoecher'],
+  5: ['konturen', 'punkteRoh'],
+  6: ['vereinfacht', 'punkteVereinfacht'],
+  7: ['geglaettet'],
+  8: ['svg'],
+};
+
+/** Die Teile des Ergebnisses ab Schritt `ab` (ohne das Bild selbst) plus die Zeiten. */
+export function teilAb(ergebnis: Ergebnis, ab: number): Partial<Ergebnis> {
+  const teil: Partial<Ergebnis> = { zeiten: ergebnis.zeiten };
+  for (let schritt = Math.max(ab, 2); schritt <= 8; schritt++) {
+    for (const feld of FELDER_JE_SCHRITT[schritt]!) (teil as Record<string, unknown>)[feld] = ergebnis[feld];
+  }
+  return teil;
 }
 
 /** Erster Schritt, dessen Einstellungen sich unterscheiden (9 = keiner). */

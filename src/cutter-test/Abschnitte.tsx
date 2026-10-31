@@ -3,6 +3,7 @@ import { useSignal } from '@preact/signals';
 import { matten, schneidebereichMm } from '../cutter/profile';
 import { polylinienZuDxf, type DxfVariante } from '../export/dxf';
 import { testformen } from '../export/testformen';
+import { speichereText } from '../gemeinsam/datei';
 import type { MattenId } from '../cutter/types';
 import { t } from '../i18n/de';
 import { berichtAlsMarkdown, berichtDateiname, erkenneBetriebssystem, protokollAlsText, protokollZeile } from './bericht';
@@ -339,15 +340,7 @@ export function Checkliste() {
 
 // ---------------------------------------------------------------------------
 
-/** Lädt Text als Datei herunter, ganz ohne Server. */
-function speichereDatei(inhalt: string, dateiname: string, typ: string) {
-  const url = URL.createObjectURL(new Blob([inhalt], { type: typ }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = dateiname;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+const speichereDatei = speichereText;
 
 const FLAECHE = { breite: 200, hoehe: 70 };
 
