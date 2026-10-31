@@ -3,6 +3,18 @@
  * Eine englische Fassung kann später als en.ts mit derselben Struktur ergänzt werden.
  * Texte mit Platzhaltern sind Funktionen.
  */
+/** Dauer in Sekunden als „1 min 05 s“ bzw. „12,3 s“. */
+export function formatiereDauer(s: number): string {
+  if (s < 60) return `${s.toFixed(1).replace('.', ',')} s`;
+  const m = Math.floor(s / 60);
+  return `${m} min ${String(Math.round(s - 60 * m)).padStart(2, '0')} s`;
+}
+
+/** Länge in mm, ab 1 m in m. */
+export function formatiereLaenge(mm: number): string {
+  return mm >= 1000 ? `${(mm / 1000).toFixed(2).replace('.', ',')} m` : `${Math.round(mm)} mm`;
+}
+
 export const de = {
   app: {
     titel: 'Vom Pixel zum Schnitt',
@@ -35,6 +47,7 @@ export const de = {
       'Vereinfachen',
       'Glätten',
       'SVG erzeugen',
+      'Simulation',
     ],
 
     laden: {
@@ -141,6 +154,51 @@ export const de = {
         'Statt gerader Strecken verbinden kubische Bézier-Kurven die Punkte. Jede Kurve hat zwei Kontrollpunkte, die sie wie Magnete in ihre Richtung ziehen; durch die Kontrollpunkte selbst geht sie meist nicht.',
         'Die Kontrollpunkte liegen auf der Richtung vom vorigen zum nächsten Punkt. So läuft die Kurve an jedem Punkt ohne Knick weiter.',
         'Echte Ecken sollen spitz bleiben, sonst wird ein „L“ rund. Knickt die Kontur stärker als der eingestellte Winkel, bleibt die Ecke spitz.',
+      ],
+    },
+    simulation: {
+      reihenfolge: 'Schnittreihenfolge',
+      reihenfolgen: {
+        original: 'Original (wie im SVG)',
+        'innen-vor-aussen': 'Innen vor außen',
+        'naechster-nachbar': 'Nächster Nachbar',
+      } as Record<string, string>,
+      vergleich: 'Vergleich',
+      spalteSchnitt: 'Schnitt',
+      spalteLeer: 'Leerfahrt',
+      spalteDauer: 'Dauer',
+      geraet: 'Gerät',
+      matte: 'Schneidematte',
+      werkzeug: 'Werkzeug',
+      stift: 'Stift',
+      messer: 'Messer',
+      geschwindigkeit: 'Geschwindigkeit (1–30)',
+      druck: 'Druck (1–33)',
+      abspielen: 'Abspielen',
+      pause: 'Pause',
+      vonVorn: 'Von vorn',
+      zeitraffer: 'Zeitraffer',
+      zeitleiste: 'Zeitleiste der Simulation',
+      zeit: (t: number, gesamt: number) => `${formatiereDauer(t)} von ${formatiereDauer(gesamt)}`,
+      kennzahlen: 'Kennzahlen',
+      schnittlaenge: 'Schnittlänge',
+      leerfahrt: 'Leerfahrten',
+      dauer: 'Geschätzte Dauer',
+      pfade: 'Pfade',
+      annahme: 'Dauer geschätzt mit Stufe n ≈ n cm/s und 0,15 s je Absenken; echte Werte misst der Machbarkeitstest.',
+      warnungAussen: (n: number) =>
+        `${n} ${n === 1 ? 'Außenkontur wird' : 'Außenkonturen werden'} vor den Löchern darin geschnitten. Das Teil kann sich lösen, bevor ein Loch fertig ist.`,
+      befehle: 'Plotterbefehle',
+      befehlInfo: (i: number, n: number) => `Befehl ${i} von ${n}`,
+      keinSvg: 'Noch kein SVG: zuerst ein Bild laden.',
+      legendeSchnitt: 'Schnitt',
+      legendeLeer: 'Leerfahrt',
+      legendeStart: 'Startpunkt und Richtung',
+      erklaerung: [
+        'Die Simulation liest dieselben Plotterbefehle, die auch an den Cutter gingen: M fährt mit angehobenem Messer (Leerfahrt), D mit abgesenktem Messer (Schnitt). Die Koordinaten stehen in Schritten von 0,05 mm, zuerst y, dann x.',
+        'Ein Cutter schneidet nur Konturen, Füllungen sind ihm egal. Jeder Pfad hat einen Startpunkt und eine Richtung.',
+        '„Innen vor außen“: Löcher werden vor der Form geschnitten, die sie umgibt. Sonst kann sich das Teil lösen, bevor das Loch fertig ist.',
+        '„Nächster Nachbar“ fährt immer zum nächstgelegenen Pfad, der schon dran ist, und beginnt dort an der nächsten Ecke. Das spart meist Leerfahrten. Das Verfahren ist aber „gierig“: Es denkt nie voraus, etwa an den Rückweg zum Ursprung. Darum ist es nicht immer das kürzeste.',
       ],
     },
     svg: {

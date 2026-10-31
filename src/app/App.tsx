@@ -1,10 +1,11 @@
 import { t } from '../i18n/de';
 import { Ablage, Schritt1, Schritt2, Schritt3, Schritt4 } from './schritte/RasterSchritte';
+import { Schritt9 } from './schritte/SimulationSchritt';
 import { Schritt5, Schritt6, Schritt7, Schritt8 } from './schritte/VektorSchritte';
 import { ergebnis, fehler, geladen, rechnet, schritt } from './zustand';
 
 const tx = t.app;
-const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8];
+const ANSICHTEN = [Schritt1, Schritt2, Schritt3, Schritt4, Schritt5, Schritt6, Schritt7, Schritt8, Schritt9];
 
 function Schrittleiste() {
   const zeiten = ergebnis.value?.zeiten ?? {};
@@ -32,7 +33,7 @@ function Schrittleiste() {
 
 function Start() {
   return (
-    <div class="start">
+    <div class="startseite">
       <p class="einleitung">{tx.untertitel}.</p>
       <Ablage />
     </div>
