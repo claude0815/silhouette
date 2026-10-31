@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { binaerAlsText, binaerAusText, type Farbbild, type Graubild } from './bilder';
-import { entrausche, findeBereiche } from './entrauschen';
+import { entrausche, findeBereiche, FLECK_ENTFERNT, LOCH_GEFUELLT } from './entrauschen';
 import { formel, grauwert, zuGraustufen } from './graustufen';
 import { binarisiere, histogramm, otsu } from './schwellwert';
 
@@ -65,6 +65,11 @@ describe('Histogramm und Schwellwert', () => {
     expect(bin.daten.reduce((a, b) => a + b, 0)).toBe(100);
   });
 
+  it('Otsu nimmt die Mitte, wenn mehrere Schwellwerte gleich gut trennen', () => {
+    // Nur die Grauwerte 20 und 230: Jeder Schwellwert von 21 bis 230 trennt perfekt.
+    expect(otsu(histogramm(graubild([20, 20, 230, 230])))).toBe(126);
+  });
+
   it('Otsu liefert bei einfarbigen und leeren Bildern einen gültigen Wert', () => {
     expect(otsu(histogramm(graubild([90, 90, 90])))).toBe(128);
     expect(otsu(new Uint32Array(256))).toBe(128);
@@ -109,6 +114,10 @@ describe('Entrauschen', () => {
     ]);
     expect(e.entfernteFlecken.map((b) => b.flaeche)).toEqual([1, 1]);
     expect(e.gefuellteLoecher.map((b) => b.flaeche)).toEqual([2]);
+    // Markierungen für die Vorher-nachher-Ansicht
+    expect(e.geaendert[0]).toBe(FLECK_ENTFERNT);
+    expect(e.geaendert[2 * 10 + 4]).toBe(LOCH_GEFUELLT);
+    expect(e.geaendert.filter((m) => m !== 0)).toHaveLength(4);
   });
 
   it('lässt große Bereiche stehen und verändert das Original nicht', () => {
@@ -121,6 +130,8 @@ describe('Entrauschen', () => {
   it('entfernt auch Flecken, die in kleinen Löchern sitzen', () => {
     const e = entrausche(binaerAusText(['.......', '.#####.', '.#...#.', '.#.#.#.', '.#...#.', '.#####.', '.......']), 10);
     expect(binaerAlsText(e.bild).slice(1, 6)).toEqual(Array(5).fill('.#####.'));
+    // Der Fleck war schon Vordergrund: Er gilt nicht als geändert.
+    expect(e.geaendert[3 * 7 + 3]).toBe(0);
   });
 
   it('Mindestfläche 1 oder weniger ändert nichts', () => {

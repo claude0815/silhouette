@@ -10,7 +10,8 @@ import type { Binaerbild, Graubild } from './bilder';
 /** Zählt für jeden Grauwert 0 … 255, wie viele Pixel ihn haben. */
 export function histogramm(bild: Graubild): Uint32Array {
   const h = new Uint32Array(256);
-  for (const wert of bild.daten) h[wert]!++;
+  const d = bild.daten;
+  for (let i = 0; i < d.length; i++) h[d[i]!]!++;
   return h;
 }
 
@@ -39,6 +40,9 @@ export function binarisiere(bild: Graubild, schwelle: number, invertieren = fals
  * w = Anteil der Pixel in der Klasse, μ = mittlerer Grauwert der Klasse.
  * Wir probieren einfach alle 256 möglichen Schwellwerte aus.
  *
+ * Oft trennen mehrere Schwellwerte gleich gut, z. B. bei einem Bild mit nur zwei Grauwerten.
+ * Dann nehmen wir die Mitte dieses Bereichs: Bei weichen Kanten (Antialiasing) ist das robuster.
+ *
  * Rückgabe: Schwellwert t im Sinne von binarisiere(), also Pixel < t sind dunkel.
  */
 export function otsu(h: Uint32Array): number {
@@ -53,7 +57,8 @@ export function otsu(h: Uint32Array): number {
   let anzahlDunkel = 0;
   let summeDunkel = 0;
   let besteVarianz = -1;
-  let besterSchwellwert = 128;
+  let ersterBester = 128;
+  let letzterBester = 128;
 
   // t ist der Schwellwert: Grauwerte 0 … t−1 sind dunkel, t … 255 hell.
   for (let t = 1; t < 256; t++) {
@@ -68,10 +73,14 @@ export function otsu(h: Uint32Array): number {
     const wHell = anzahlHell / gesamt;
     const varianz = wDunkel * wHell * (mittelDunkel - mittelHell) ** 2;
 
-    if (varianz > besteVarianz) {
+    // Gleich gut heißt hier: bis auf Rundungsfehler gleich.
+    if (varianz > besteVarianz * (1 + 1e-12)) {
       besteVarianz = varianz;
-      besterSchwellwert = t;
+      ersterBester = t;
+      letzterBester = t;
+    } else if (varianz >= besteVarianz * (1 - 1e-12)) {
+      letzterBester = t;
     }
   }
-  return besterSchwellwert;
+  return Math.round((ersterBester + letzterBester) / 2);
 }
