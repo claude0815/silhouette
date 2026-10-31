@@ -324,6 +324,7 @@ export const de = {
       positionY: 'Abstand oben (mm)',
       code: 'SVG-Code',
       herunterladenSvg: 'SVG herunterladen',
+      inWerkstatt: 'In der SVG-Werkstatt bearbeiten',
       herunterladenDxf: 'DXF herunterladen (für Silhouette Studio)',
       kopieren: 'Code kopieren',
       kopiert: 'Kopiert',
@@ -368,7 +369,7 @@ export const de = {
     quellcode: 'Quellcode',
     gplVolltext: 'Volltext der GPL-2.0',
     fremdTitel: 'Verwendete Bibliotheken',
-    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft.',
+    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft; alle stehen unter der MIT-Lizenz und sind mit der GPL vereinbar.',
     lizenztext: 'Lizenztext',
     uebernommenTitel: 'Übernommenes Wissen und übernommener Code',
     uebernommenText:

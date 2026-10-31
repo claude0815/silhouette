@@ -929,3 +929,48 @@
   font-size: 0.8rem;
   cursor: pointer;
 }
+.beispielkarte {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.beispielkarte.aktiv {
+  border-color: #0f172a;
+}
+.beispielkarte header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.beispielkarte header button {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+}
+.beispielkarte p {
+  margin: 0.3rem 0;
+}
+.aufgaben {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+.aufgaben li {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr;
+  gap: 0.3rem;
+  padding: 0.3rem 0;
+  border-top: 1px solid #f1f5f9;
+}
+.aufgaben .haken {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+.aufgaben li.geloest .haken,
+.geschafft {
+  color: #15803d;
+  font-weight: 600;
+}

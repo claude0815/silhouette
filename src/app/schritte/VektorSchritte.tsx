@@ -14,7 +14,7 @@ import { befehlErklaerung, Befehlsmarkierung } from '../svgansicht';
 import { t } from '../../i18n/de';
 import { Bildansicht } from '../Bildansicht';
 import { ausBinaerbild } from '../raster';
-import { auswahlForm, einstellungen, ergebnis, geladen, setze } from '../zustand';
+import { auswahlForm, bereich, einstellungen, ergebnis, geladen, setze } from '../zustand';
 import { Erklaerung, Kasten, Regler, Schalter, Schrittansicht, vieleckD } from './Bausteine';
 
 const tx = t.app;
@@ -501,6 +501,7 @@ export function Schritt8() {
           </Kasten>
           <Kasten>
             <div class="knoepfe senkrecht">
+              <button onClick={() => (bereich.value = 'werkstatt')}>{tx.svg.inWerkstatt}</button>
               <button onClick={() => speichereText(text, 'vom-pixel-zum-schnitt.svg', 'image/svg+xml')}>{tx.svg.herunterladenSvg}</button>
               <button onClick={() => speichereText(svgZuDxf(text).dxf, 'vom-pixel-zum-schnitt.dxf', 'application/dxf')}>
                 {tx.svg.herunterladenDxf}

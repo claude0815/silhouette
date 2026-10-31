@@ -53,19 +53,26 @@ effect(() => {
   }
 });
 
+function speichere(d: Dokument): void {
+  try {
+    if (d.quelle === 'eigen') globalThis.localStorage?.setItem(SPEICHER, JSON.stringify(d));
+    else globalThis.localStorage?.removeItem(SPEICHER);
+  } catch {
+    // Speichern nicht möglich (z. B. privater Modus): dann nur für diese Sitzung
+  }
+}
+
 // Eigene Fassungen speichern (kurz verzögert, damit nicht bei jedem Tastendruck geschrieben wird)
 let speicherZeit: ReturnType<typeof setTimeout> | undefined;
 effect(() => {
   const d = dokument.value;
   clearTimeout(speicherZeit);
-  speicherZeit = setTimeout(() => {
-    try {
-      if (d.quelle === 'eigen') globalThis.localStorage?.setItem(SPEICHER, JSON.stringify(d));
-      else globalThis.localStorage?.removeItem(SPEICHER);
-    } catch {
-      // Speichern nicht möglich: dann nur für diese Sitzung
-    }
-  }, 300);
+  speicherZeit = setTimeout(() => speichere(d), 300);
+});
+// Beim Verlassen der Seite sofort speichern, damit die letzte Änderung nicht verloren geht
+globalThis.addEventListener?.('pagehide', () => {
+  clearTimeout(speicherZeit);
+  speichere(dokument.peek());
 });
 
 /** Text aus dem Editor oder vom Ziehen eines Punkts: Ab jetzt ist es eine eigene Fassung. */

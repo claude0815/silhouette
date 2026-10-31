@@ -126,7 +126,7 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 - Bluetooth: UUIDs und Ablauf stehen in `docs/protokoll.md`. Geprüft ist der BLE-Weg dort nur mit einem Cameo 5 Alpha. Ob Cameo 4, Cameo 5 und Portrait 3/4 per BLE erreichbar sind, klärt der Machbarkeitstest (Web Bluetooth kann kein klassisches Bluetooth).
 - Software an der Schule öffnet kein SVG (31.10.2026 bestätigt), DXF bleibt der Weg über Silhouette Studio.
 
-## Stufe 2 – SVG lernen (Plan, 31.10.2026)
+## Stufe 2 – SVG lernen (umgesetzt, 31.10.2026)
 
 **Entscheidungen**
 
@@ -136,9 +136,22 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 
 **Umsetzung in Schritten**
 
-1. SVG-Leser erweitern: Elementbaum mit Gruppen, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon` als Pfade (Umrechnung sichtbar), Bögen `A`, `transform`, `fill`/`stroke` (auch aus `style` und vererbt), fehlertolerantes Lesen von `d` (gültiger Teil wird gezeichnet, Fehlerstelle markiert), Position jeder Zahl im Text.
-2. Cutter-Checks als reine Funktionen: Füllungen, offene/fast geschlossene Pfade, Löcher, Inseln bei Schablonen, doppelte und winzige Segmente, außerhalb von Matte und Dokument.
-3. Zentrales Dokument und Bereichsleiste; Simulation wird eigener Bereich.
-4. Werkstatt: Editor mit Syntaxfarben und Fehlermarken, Live-Vorschau mit Raster und Lineal in mm, Cutter-Ansicht (nur Konturen), Verknüpfung Grafik ↔ Code je Befehl, Datei öffnen und speichern.
-5. Pfad-Erklärer: Befehle mit Bedeutung und absoluten Koordinaten; Punkte und Kontrollpunkte in der Grafik ziehen, der Code ändert sich mit.
-6. Beispiele und Mini-Aufgaben als Karten, Aufgaben mit automatischer Prüfung.
+1. ✅ SVG-Leser erweitern: Elementbaum mit Gruppen, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon` als Pfade (Umrechnung sichtbar), Bögen `A`, `transform`, `fill`/`stroke` (auch aus `style` und vererbt), fehlertolerantes Lesen von `d` (gültiger Teil wird gezeichnet, Fehlerstelle markiert), Position jeder Zahl im Text.
+2. ✅ Cutter-Checks als reine Funktionen: Füllungen, offene/fast geschlossene Pfade, Löcher, Inseln bei Schablonen, doppelte und winzige Segmente, außerhalb von Matte und Dokument.
+3. ✅ Zentrales Dokument und Bereichsleiste; Simulation wird eigener Bereich.
+4. ✅ Werkstatt: Editor mit Syntaxfarben und Fehlermarken, Live-Vorschau mit Raster und Lineal in mm, Cutter-Ansicht (nur Konturen), Verknüpfung Grafik ↔ Code je Befehl, Datei öffnen und speichern.
+5. ✅ Pfad-Erklärer: Befehle mit Bedeutung und absoluten Koordinaten; Punkte und Kontrollpunkte in der Grafik ziehen, der Code ändert sich mit.
+6. ✅ Beispiele und Mini-Aufgaben als Karten, Aufgaben mit automatischer Prüfung.
+
+**Stand nach der Umsetzung**
+
+- Werkstatt lädt erst bei Bedarf (CodeMirror etwa 144 kB komprimiert); der erste Aufruf der App bleibt bei etwa 34 kB.
+- Zehn Beispiele mit 16 Aufgaben. Jede Aufgabe hat eine Musterlösung; ein Test prüft, dass die Prüfung beim Ausgangsstand „offen“ und bei der Lösung „gelöst“ meldet.
+- Eigene Fassungen des Dokuments bleiben im Browser gespeichert (auch beim Schließen des Tabs).
+- Behobener Fehler im Editor: Beim schnellen Tippen gingen Zeichen verloren, weil ein verspäteter Abgleich mit veraltetem Text sie überschrieb. Der Abgleich läuft jetzt in `useLayoutEffect`.
+
+**Noch offen oder bewusst später**
+
+- Ziehen von Punkten bei Grundformen (rect, circle …): bisher nur bei `<path>`.
+- `<use>`, `<text>` und eingebettete Bilder werden nicht geschnitten (Hinweis erscheint). Text in Pfade umwandeln ist Stufe 4.
+- `stroke-width` wird nicht ausgewertet (für den Cutter ohne Bedeutung).

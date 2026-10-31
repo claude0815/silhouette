@@ -123,11 +123,9 @@ export function Werkstatt() {
           sprung={sprung.value}
           blick={blick ?? null}
           onCursor={(pos) => {
+            // Nur auswählen, den Reiter nicht wechseln: Wer an einer Aufgabe arbeitet, behält sie im Blick
             const a = anStelle(d, pos);
-            if (a) {
-              auswahl.value = a.pfad;
-              reiter.value = 'erklaerer';
-            }
+            if (a) auswahl.value = a.pfad;
           }}
           onZeigen={(pos) => {
             const a = pos === null ? null : anStelle(d, pos);

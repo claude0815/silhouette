@@ -10,6 +10,18 @@ import signalsCoreLizenz from '../../node_modules/@preact/signals-core/LICENSE?r
 import preactPaket from '../../node_modules/preact/package.json';
 import signalsPaket from '../../node_modules/@preact/signals/package.json';
 import signalsCorePaket from '../../node_modules/@preact/signals-core/package.json';
+import codemirrorLizenz from '../../node_modules/codemirror/LICENSE?raw';
+import codemirrorPaket from '../../node_modules/codemirror/package.json';
+import lezerLizenz from '../../node_modules/@lezer/common/LICENSE?raw';
+import lezerPaket from '../../node_modules/@lezer/common/package.json';
+import styleModLizenz from '../../node_modules/style-mod/LICENSE?raw';
+import styleModPaket from '../../node_modules/style-mod/package.json';
+import keynameLizenz from '../../node_modules/w3c-keyname/LICENSE?raw';
+import keynamePaket from '../../node_modules/w3c-keyname/package.json';
+import creltLizenz from '../../node_modules/crelt/LICENSE?raw';
+import creltPaket from '../../node_modules/crelt/package.json';
+import clusterLizenz from '../../node_modules/@marijn/find-cluster-break/LICENSE?raw';
+import clusterPaket from '../../node_modules/@marijn/find-cluster-break/package.json';
 import { t } from '../i18n/de';
 
 const tx = t.ueber;
@@ -19,6 +31,18 @@ const bibliotheken = [
   { name: 'Preact', paket: preactPaket, url: 'https://github.com/preactjs/preact', text: preactLizenz },
   { name: '@preact/signals', paket: signalsPaket, url: 'https://github.com/preactjs/signals', text: signalsLizenz },
   { name: '@preact/signals-core', paket: signalsCorePaket, url: 'https://github.com/preactjs/signals', text: signalsCoreLizenz },
+  // Code-Editor der SVG-Werkstatt; alle @codemirror/*-Pakete stehen unter derselben Lizenz
+  {
+    name: 'CodeMirror 6 (codemirror, @codemirror/*)',
+    paket: codemirrorPaket,
+    url: 'https://github.com/codemirror/dev',
+    text: codemirrorLizenz,
+  },
+  { name: 'Lezer (@lezer/common, highlight, lr, xml)', paket: lezerPaket, url: 'https://github.com/lezer-parser', text: lezerLizenz },
+  { name: 'style-mod', paket: styleModPaket, url: 'https://github.com/marijnh/style-mod', text: styleModLizenz },
+  { name: 'w3c-keyname', paket: keynamePaket, url: 'https://github.com/marijnh/w3c-keyname', text: keynameLizenz },
+  { name: 'crelt', paket: creltPaket, url: 'https://github.com/marijnh/crelt', text: creltLizenz },
+  { name: '@marijn/find-cluster-break', paket: clusterPaket, url: 'https://github.com/marijnh/find-cluster-break', text: clusterLizenz },
 ];
 
 export function Ueber(props: { zurueck: () => void }) {

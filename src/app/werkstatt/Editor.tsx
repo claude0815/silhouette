@@ -6,7 +6,7 @@ import { xml } from '@codemirror/lang-xml';
 import { StateEffect, StateField, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, type DecorationSet } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 
 export interface Marke {
   start: number;
@@ -63,6 +63,12 @@ export function Editor(props: EditorProps) {
   const rueck = useRef(props);
   rueck.current = props;
   const extern = useRef(false);
+  /**
+   * Was der Editor zuletzt selbst gemeldet hat. Kommt genau dieser Text als „Text von außen“
+   * zurück, ist es nur das Echo der eigenen Eingabe – oft schon überholt, weil inzwischen
+   * weitergetippt wurde. Würde man es übernehmen, gingen Zeichen verloren.
+   */
+  const zuletztGemeldet = useRef(props.text);
 
   useEffect(() => {
     const erweiterungen: Extension[] = [
@@ -71,7 +77,11 @@ export function Editor(props: EditorProps) {
       EditorView.lineWrapping,
       markenFeld,
       EditorView.updateListener.of((u) => {
-        if (u.docChanged && !extern.current) rueck.current.onChange(u.state.doc.toString());
+        if (u.docChanged && !extern.current) {
+          const text = u.state.doc.toString();
+          zuletztGemeldet.current = text;
+          rueck.current.onChange(text);
+        }
         if (u.selectionSet && !extern.current) rueck.current.onCursor?.(u.state.selection.main.head);
       }),
       EditorView.domEventHandlers({
@@ -88,12 +98,15 @@ export function Editor(props: EditorProps) {
     return () => v.destroy();
   }, []);
 
-  // Text von außen (Ziehen, Beispiel, Datei): nur den geänderten Teil ersetzen, damit der Cursor bleibt
-  useEffect(() => {
+  // Text von außen (Ziehen, Beispiel, Datei): nur den geänderten Teil ersetzen, damit der Cursor bleibt.
+  // useLayoutEffect statt useEffect: Er läuft im selben Schritt wie das Zeichnen, also bevor eine
+  // weitere Taste ankommt. Ein späterer Abgleich mit veraltetem Text würde frisch getippte Zeichen löschen.
+  useLayoutEffect(() => {
     const v = sicht.current;
     if (!v) return;
     const alt = v.state.doc.toString();
-    if (alt === props.text) return;
+    if (alt === props.text || props.text === zuletztGemeldet.current) return;
+    zuletztGemeldet.current = props.text;
     let anfang = 0;
     while (anfang < alt.length && anfang < props.text.length && alt[anfang] === props.text[anfang]) anfang++;
     let ende = 0;
