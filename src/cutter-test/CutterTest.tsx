@@ -14,7 +14,7 @@ export function CutterTest() {
       <DxfTest />
       <Checkliste />
       <p>
-        <a href="./">{t.cutterTest.zurApp}</a>
+        <a href="./">{t.cutterTest.zurApp}</a> · <a href="./#ueber">{t.app.ueber}</a> · {t.app.lizenz}
       </p>
     </main>
   );

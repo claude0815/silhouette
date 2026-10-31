@@ -9,6 +9,7 @@ import { istGerade, type Bezierpfad } from '../../pipeline/glaetten';
 import { FALL_SEGMENTE, kantenmitte, zellenMitKontur } from '../../pipeline/konturen';
 import { svgZahl, teilpfad } from '../../pipeline/svg-erzeugen';
 import { leseSvg } from '../../svg/dokument';
+import { befehlsGeometrie, naechsterBefehl, type BefehlsGeometrie } from '../../svg/pfad';
 import { t } from '../../i18n/de';
 import { Bildansicht } from '../Bildansicht';
 import { ausBinaerbild } from '../raster';
@@ -350,7 +351,29 @@ export function Schritt7() {
 // ---------------------------------------------------------------------------
 // 8. SVG erzeugen – Grafik und Code verknüpft
 
-const markiert = signal<number | null>(null);
+interface Markierung {
+  pfad: number;
+  /** Index des Befehls im Pfad, oder null für den ganzen Pfad */
+  befehl: number | null;
+  /** Woher kam die Markierung? Nur bei „grafik“ wird der Code mitgescrollt. */
+  quelle: 'grafik' | 'code';
+}
+const markiert = signal<Markierung | null>(null);
+
+/** Abschnitte des Codetexts: normaler Text, Pfad-Element und darin einzelne Befehle */
+type Codeteil = { text: string; pfad?: number; befehl?: number };
+
+const pkt = (p: Punkt) => `(${svgZahl(p.x)} | ${svgZahl(p.y)})`;
+
+function befehlErklaerung(typ: string, g: BefehlsGeometrie | undefined): string {
+  const b = tx.svg.befehl;
+  if (!g) return b.sonst(typ);
+  if (g.art === 'punkt') return b.M(pkt(g.p));
+  // Z zeichnet eine Strecke zurück zum Anfang des aktuellen Teilpfads; dieser Anfang ist g.p.
+  if (typ === 'Z' && g.art === 'strecke') return b.Z(pkt(g.von), pkt(g.p));
+  if (g.art === 'strecke') return b.L(pkt(g.von), pkt(g.p));
+  return b.C(pkt(g.von), pkt(g.c1), pkt(g.c2), pkt(g.p));
+}
 
 export function Schritt8() {
   const r = ergebnis.value;
@@ -358,18 +381,37 @@ export function Schritt8() {
   const [kopiert, setKopiert] = useState(false);
   const text = r?.svg?.text ?? '';
   const dok = useMemo(() => leseSvg(text), [text]);
-  // Zeilen des Codes mit Anfang und Ende im Text, um Zeile und Pfad zuzuordnen
-  const zeilen = useMemo(() => {
-    let pos = 0;
-    return text.split('\n').map((z) => {
-      const start = pos;
-      pos += z.length + 1;
-      return { text: z, start, ende: start + z.length };
-    });
-  }, [text]);
-  const pfadVonZeile = (z: { start: number; ende: number }) =>
-    dok.pfade.findIndex((p) => p.element.start >= z.start && p.element.start <= z.ende);
+  const geometrien = useMemo(() => dok.pfade.map((p) => befehlsGeometrie(p.befehle)), [dok]);
   const m = markiert.value;
+
+  // Code in Teile zerlegen, damit jedes Element und jeder Befehl einzeln markiert werden kann
+  const teile = useMemo(() => {
+    const t: Codeteil[] = [];
+    let pos = 0;
+    dok.pfade.forEach((p, pi) => {
+      t.push({ text: text.slice(pos, p.element.start) });
+      let q = p.element.start;
+      p.befehle.forEach((b, bi) => {
+        if (b.start > q) t.push({ text: text.slice(q, b.start), pfad: pi });
+        t.push({ text: text.slice(b.start, b.ende), pfad: pi, befehl: bi });
+        q = b.ende;
+      });
+      t.push({ text: text.slice(q, p.element.ende), pfad: pi });
+      pos = p.element.ende;
+    });
+    t.push({ text: text.slice(pos) });
+    return t;
+  }, [dok, text]);
+
+  // Beim Zeigen in der Grafik den Code mitscrollen
+  useEffect(() => {
+    if (m?.quelle !== 'grafik') return;
+    const sel = m.befehl === null ? `[data-pfad="${m.pfad}"]` : `[data-befehl="${m.pfad}-${m.befehl}"]`;
+    document.querySelector(sel)?.scrollIntoView({ block: 'nearest' });
+  }, [m?.pfad, m?.befehl, m?.quelle]);
+
+  const markierteGeometrie = m && m.befehl !== null ? geometrien[m.pfad]?.get(m.befehl) : undefined;
+  const markierterBefehl = m && m.befehl !== null ? dok.pfade[m.pfad]?.befehle[m.befehl] : undefined;
 
   const vorschau = (
     <div class="svg-vorschau" data-testid="svg-vorschau">
@@ -387,28 +429,60 @@ export function Schritt8() {
             <path
               d={d}
               fill-rule="evenodd"
-              class={`svg-form ${i === m ? 'markiert' : ''}`}
-              onMouseEnter={() => (markiert.value = i)}
+              class={`svg-form ${m?.pfad === i ? 'markiert' : ''}`}
+              data-testid={`form-${i}`}
+              onMouseMove={(ev) => {
+                // Mausposition in SVG-Koordinaten (mm) umrechnen
+                const svg = (ev.currentTarget as SVGPathElement).ownerSVGElement!;
+                const ctm = svg.getScreenCTM();
+                if (!ctm) return;
+                const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse());
+                const befehl = naechsterBefehl(geometrien[i]!, { x: pt.x, y: pt.y }, 0.2);
+                if (m?.pfad !== i || m.befehl !== befehl) markiert.value = { pfad: i, befehl, quelle: 'grafik' };
+              }}
               onMouseLeave={() => (markiert.value = null)}
             />
           );
         })}
+        {markierteGeometrie && <Befehlsmarkierung g={markierteGeometrie} />}
       </svg>
+      <p class="befehl-info" data-testid="befehl-info">
+        {markierterBefehl
+          ? befehlErklaerung(markierterBefehl.typ, markierteGeometrie)
+          : m
+            ? tx.svg.form(m.pfad + 1)
+            : tx.svg.befehlHinweis}
+      </p>
     </div>
   );
 
   const code = (
     <pre class="svg-code" data-testid="svg-code">
-      {zeilen.map((z) => {
-        const p = pfadVonZeile(z);
+      {teile.map((teil) => {
+        if (teil.pfad === undefined) return teil.text;
+        const pfadMarkiert = m?.pfad === teil.pfad;
+        if (teil.befehl === undefined) {
+          return (
+            <span
+              class={`code-element ${pfadMarkiert ? 'markiert' : ''}`}
+              data-pfad={teil.pfad}
+              onMouseEnter={() => (markiert.value = { pfad: teil.pfad!, befehl: null, quelle: 'code' })}
+              onMouseLeave={() => (markiert.value = null)}
+            >
+              {teil.text}
+            </span>
+          );
+        }
+        const befehlMarkiert = pfadMarkiert && m?.befehl === teil.befehl;
         return (
-          <div
-            class={`code-zeile ${p !== -1 && p === m ? 'markiert' : ''}`}
-            onMouseEnter={() => (markiert.value = p === -1 ? null : p)}
+          <span
+            class={`code-befehl ${pfadMarkiert ? 'markiert' : ''} ${befehlMarkiert ? 'aktiv' : ''}`}
+            data-befehl={`${teil.pfad}-${teil.befehl}`}
+            onMouseEnter={() => (markiert.value = { pfad: teil.pfad!, befehl: teil.befehl!, quelle: 'code' })}
             onMouseLeave={() => (markiert.value = null)}
           >
-            {z.text}
-          </div>
+            {teil.text}
+          </span>
         );
       })}
     </pre>
@@ -456,5 +530,21 @@ export function Schritt8() {
         </>
       }
     />
+  );
+}
+
+/** Hebt hervor, was ein einzelner Befehl zeichnet; bei Kurven mit Kontrollpunkten. */
+function Befehlsmarkierung(props: { g: BefehlsGeometrie }) {
+  const g = props.g;
+  if (g.art === 'punkt') return <circle cx={g.p.x} cy={g.p.y} r={1.2} class="befehl-punkt" />;
+  if (g.art === 'strecke') return <line x1={g.von.x} y1={g.von.y} x2={g.p.x} y2={g.p.y} class="befehl-linie" />;
+  return (
+    <g>
+      <line x1={g.von.x} y1={g.von.y} x2={g.c1.x} y2={g.c1.y} class="befehl-hebel" />
+      <line x1={g.p.x} y1={g.p.y} x2={g.c2.x} y2={g.c2.y} class="befehl-hebel" />
+      <path d={`M${g.von.x} ${g.von.y}C${g.c1.x} ${g.c1.y} ${g.c2.x} ${g.c2.y} ${g.p.x} ${g.p.y}`} class="befehl-linie" />
+      <circle cx={g.c1.x} cy={g.c1.y} r={0.7} class="befehl-kontrolle" />
+      <circle cx={g.c2.x} cy={g.c2.y} r={0.7} class="befehl-kontrolle" />
+    </g>
   );
 }

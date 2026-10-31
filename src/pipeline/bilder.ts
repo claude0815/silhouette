@@ -62,3 +62,34 @@ export function binaerAlsText(bild: Binaerbild): string[] {
   }
   return zeilen;
 }
+
+/** Ein Rechteck in Pixeln (ganze Zahlen). */
+export interface Rechteck {
+  x: number;
+  y: number;
+  breite: number;
+  hoehe: number;
+}
+
+/** Begrenzt ein Rechteck auf das Bild und rundet auf ganze Pixel; mindestens 1 × 1. */
+export function begrenzeRechteck(r: Rechteck, breite: number, hoehe: number): Rechteck {
+  const x0 = Math.max(0, Math.min(breite - 1, Math.round(Math.min(r.x, r.x + r.breite))));
+  const y0 = Math.max(0, Math.min(hoehe - 1, Math.round(Math.min(r.y, r.y + r.hoehe))));
+  const x1 = Math.max(x0 + 1, Math.min(breite, Math.round(Math.max(r.x, r.x + r.breite))));
+  const y1 = Math.max(y0 + 1, Math.min(hoehe, Math.round(Math.max(r.y, r.y + r.hoehe))));
+  return { x: x0, y: y0, breite: x1 - x0, hoehe: y1 - y0 };
+}
+
+/**
+ * Zuschnitt: Schneidet einen rechteckigen Ausschnitt aus einem Farbbild.
+ * Zeile für Zeile wird der passende Teil der Pixeltabelle kopiert.
+ */
+export function schneideZu(bild: Farbbild, r: Rechteck): Farbbild {
+  const { x, y, breite, hoehe } = begrenzeRechteck(r, bild.breite, bild.hoehe);
+  const daten = new Uint8ClampedArray(breite * hoehe * 4);
+  for (let zeile = 0; zeile < hoehe; zeile++) {
+    const von = ((y + zeile) * bild.breite + x) * 4;
+    daten.set(bild.daten.subarray(von, von + breite * 4), zeile * breite * 4);
+  }
+  return { breite, hoehe, daten };
+}

@@ -61,10 +61,10 @@ src/
 2. ✅ **Algorithmen als reine Funktionen** mit Tests und deutschen Kommentaren: Graustufen → Histogramm/Otsu → Schwellwert → Entrauschen → Marching Squares → Douglas-Peucker → Bézier → SVG.
 3. ✅ **Web Worker** und Übertragung der Zwischenstände (Transferable `ArrayBuffer`, kein SharedArrayBuffer).
 4. ✅ **Oberfläche der Pipeline:** Bild laden (Drag & Drop, Zuschnitt), pro Schritt eine Ansicht mit Reglern und Datenansicht (Pixelwerte, 0/1-Matrix, Punktliste), aufklappbare Erklärung.
-5. 🔶 **SVG-Dokument und verknüpfte Ansicht:** Code (zunächst nur lesbar, editierbar erst in Stufe 2) neben der Grafik, Hover/Klick markiert in beide Richtungen.
+5. ✅ **SVG-Dokument und verknüpfte Ansicht:** Code (zunächst nur lesbar, editierbar erst in Stufe 2) neben der Grafik, Hover/Klick markiert in beide Richtungen.
 6. ✅ **Flatten + Simulation:** Messerweg abspielen, Leerfahrten, Kennzahlen, Reihenfolgen vergleichen, GPGL-Befehle zeilensynchron (mit `SimulatedCutter`).
 7. **Export:** SVG und DXF, Zwischenstände als PNG/CSV/JSON.
-8. **Seite „Über und Lizenzen“** mit Link zum Quellcode.
+8. ✅ **Seite „Über und Lizenzen“** mit Link zum Quellcode.
 9. **Leistung prüfen:** Bild 2000 × 2000 px ohne spürbare Wartezeit (Messung im Test bzw. per Benchmark-Skript).
 
 ### Stand der Algorithmen (31.10.2026)
@@ -86,11 +86,14 @@ src/
 - Dauer ist geschätzt (Stufe n ≈ n cm/s, 0,15 s je Absenken). Echte Geschwindigkeiten im Machbarkeitstest messen.
 - „Nächster Nachbar“ ist gierig und bedenkt den Rückweg nicht; ein Test belegt ein Beispiel, in dem die Originalreihenfolge kürzer ist.
 
-**Noch offen in Stufe 1**
+**Abschluss Stufe 1 (31.10.2026)**
 
-- Zuschnitt beim Laden (Schritt 1).
-- Markierung einzelner Pfadbefehle (M, L, C, Z) statt ganzer Zeilen.
-- Seite „Über und Lizenzen“.
+- Zuschnitt in Schritt 1: Rechteck aufziehen oder eingeben, immer bezogen auf das Bild vor dem Zuschnitt; aufhebbar.
+- Schritt 8 markiert einzelne Pfadbefehle: Befehl im Code → Strecke bzw. Kurve mit Kontrollpunkten in der Grafik und Erklärung in Worten; Zeigen in der Grafik → Befehl im Code.
+- Seite „Über und Lizenzen“ (App und Testseite): GPL-Hinweis mit Volltext, Link zum Quellcode, Bibliotheken mit eingebundenen Original-Lizenztexten (am Repository geprüft), Herkunft der übernommenen Cutter-Informationen.
+
+**Noch offen**
+
 - Laufzeit großer Bilder: Kopieren der Zwischenstände aus dem Worker und Aufbau der Anzeige kosten zusammen etwa 0,25 s.
 
 ### Testansatz

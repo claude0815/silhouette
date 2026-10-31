@@ -1,5 +1,5 @@
 /** Bilder laden: aus einer Datei oder als eingebautes Beispielbild. */
-import type { Farbbild } from '../pipeline/bilder';
+import type { Farbbild, Rechteck } from '../pipeline/bilder';
 
 /** Größte erlaubte Kantenlänge; größere Bilder werden verkleinert. */
 export const MAX_KANTE = 2000;
@@ -9,6 +9,8 @@ export interface GeladenesBild {
   name: string;
   /** Originalgröße, falls verkleinert wurde */
   original?: { breite: number; hoehe: number };
+  /** Bild vor dem Zuschnitt und das gewählte Rechteck, falls zugeschnitten wurde */
+  zuschnitt?: { vorher: Farbbild; rechteck: Rechteck };
 }
 
 function leinwand(breite: number, hoehe: number): CanvasRenderingContext2D {

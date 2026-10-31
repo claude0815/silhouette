@@ -1,11 +1,12 @@
 /** Schritte 1 bis 4: Bild laden, Graustufen, Schwellwert, Entrauschen. */
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { grauwert, LUMINANZ } from '../../pipeline/graustufen';
 import { t } from '../../i18n/de';
 import { speichereText } from '../../gemeinsam/datei';
 import { Bildansicht } from '../Bildansicht';
 import { ausBinaerbild, ausFarbbild, ausGraubild, binaerAlsCsv, speicherePng } from '../raster';
-import { einstellungen, ergebnis, geladen, oeffneBeispiel, oeffneDatei, setze, zeiger } from '../zustand';
+import { einstellungen, ergebnis, geladen, hebeZuschnittAuf, oeffneBeispiel, oeffneDatei, schneideBildZu, setze, zeiger } from '../zustand';
+import { begrenzeRechteck, type Rechteck } from '../../pipeline/bilder';
 import { Erklaerung, Kasten, Pixelraster, Regler, Schalter, Schrittansicht } from './Bausteine';
 
 const tx = t.app;
@@ -55,23 +56,109 @@ export function Ablage() {
   );
 }
 
+/** Eingabefelder für das Zuschnitt-Rechteck */
+function Zahlenfeld(props: { label: string; wert: number; onChange: (n: number) => void }) {
+  return (
+    <label class="zahlenfeld">
+      {props.label}
+      <input
+        type="number"
+        value={props.wert}
+        onChange={(e) => {
+          const n = e.currentTarget.valueAsNumber;
+          if (Number.isFinite(n)) props.onChange(n);
+        }}
+      />
+    </label>
+  );
+}
+
 export function Schritt1() {
   const g = geladen.value!;
-  const bild = useMemo(() => ausFarbbild(g.bild), [g.bild]);
-  const { breite, hoehe, daten } = g.bild;
+  // Im Zuschnitt-Modus wird das Bild vor dem Zuschnitt gezeigt, damit man den Ausschnitt frei wählen kann.
+  const [auswahl, setAuswahl] = useState<Rechteck | null>(null);
+  // Neues Bild geladen → laufende Auswahl verwerfen
+  const grundbild = g.zuschnitt?.vorher ?? g.bild;
+  useEffect(() => setAuswahl(null), [grundbild]);
+  const quelle = auswahl ? (g.zuschnitt?.vorher ?? g.bild) : g.bild;
+  const bild = useMemo(() => ausFarbbild(quelle), [quelle]);
+  const { breite, hoehe, daten } = quelle;
+  const r = auswahl ? begrenzeRechteck(auswahl, breite, hoehe) : null;
+  const setzeTeil = (teil: Partial<Rechteck>) => setAuswahl({ ...r!, ...teil });
+
   return (
     <Schrittansicht
-      haupt={<Bildansicht breite={breite} hoehe={hoehe} bild={bild} />}
+      haupt={
+        <Bildansicht
+          breite={breite}
+          hoehe={hoehe}
+          bild={bild}
+          onAuswahl={auswahl ? setAuswahl : undefined}
+          ueberlagerung={
+            r
+              ? () => (
+                  <path
+                    d={`M0 0H${breite}V${hoehe}H0Z M${r.x} ${r.y}V${r.y + r.hoehe}H${r.x + r.breite}V${r.y}Z`}
+                    class="zuschnitt-maske"
+                    fill-rule="evenodd"
+                  />
+                )
+              : undefined
+          }
+        />
+      }
       seite={
         <>
           <Kasten>
             <p>
               <strong>{g.name}</strong>
               <br />
-              {tx.laden.groesse(breite, hoehe)}
+              {tx.laden.groesse(g.bild.breite, g.bild.hoehe)}
             </p>
             {g.original && <p class="hinweis">{tx.laden.verkleinert(breite, hoehe, g.original.breite, g.original.hoehe)}</p>}
             <Ablage />
+          </Kasten>
+          <Kasten titel={tx.laden.zuschnitt} testid="zuschnitt">
+            {r ? (
+              <>
+                <p class="klein">{tx.laden.zuschnittHinweis}</p>
+                <div class="zahlenfelder">
+                  <Zahlenfeld label={tx.laden.links} wert={r.x} onChange={(x) => setzeTeil({ x })} />
+                  <Zahlenfeld label={tx.laden.oben} wert={r.y} onChange={(y) => setzeTeil({ y })} />
+                  <Zahlenfeld label={tx.laden.breite} wert={r.breite} onChange={(b) => setzeTeil({ breite: b })} />
+                  <Zahlenfeld label={tx.laden.hoehe} wert={r.hoehe} onChange={(h) => setzeTeil({ hoehe: h })} />
+                </div>
+                <div class="knoepfe">
+                  <button
+                    onClick={() => {
+                      schneideBildZu(r);
+                      setAuswahl(null);
+                    }}
+                  >
+                    {tx.laden.uebernehmen}
+                  </button>
+                  <button onClick={() => setAuswahl(null)}>{tx.laden.abbrechen}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                {g.zuschnitt && (
+                  <p class="klein">
+                    {tx.laden.zuschnittInfo(g.zuschnitt.rechteck.x, g.zuschnitt.rechteck.y, g.bild.breite, g.bild.hoehe)}
+                  </p>
+                )}
+                <div class="knoepfe">
+                  <button
+                    onClick={() =>
+                      setAuswahl(g.zuschnitt?.rechteck ?? { x: 0, y: 0, breite: g.bild.breite, hoehe: g.bild.hoehe })
+                    }
+                  >
+                    {tx.laden.zuschneiden}
+                  </button>
+                  {g.zuschnitt && <button onClick={hebeZuschnittAuf}>{tx.laden.aufheben}</button>}
+                </div>
+              </>
+            )}
           </Kasten>
           <Kasten>
             <Pixelraster
@@ -81,8 +168,8 @@ export function Schritt1() {
               radius={2}
               zelle={(x, y) => {
                 const i = 4 * (y * breite + x);
-                const [r, gr, b] = [daten[i]!, daten[i + 1]!, daten[i + 2]!];
-                return { farbe: `rgb(${r},${gr},${b})`, text: `${r}\n${gr}\n${b}`, hell: grauwert(r, gr, b, 'luminanz') > 140 };
+                const [rot, gr, b] = [daten[i]!, daten[i + 1]!, daten[i + 2]!];
+                return { farbe: `rgb(${rot},${gr},${b})`, text: `${rot}\n${gr}\n${b}`, hell: grauwert(rot, gr, b, 'luminanz') > 140 };
               }}
             />
             <button onClick={() => speicherePng(bild, 'schritt1-bild.png')}>{tx.alsPng}</button>

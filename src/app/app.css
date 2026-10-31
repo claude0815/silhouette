@@ -392,7 +392,7 @@
   cursor: pointer;
 }
 .svg-form.markiert {
-  fill: #f59e0b;
+  fill: #fcd34d;
 }
 .svg-code {
   margin: 0;
@@ -402,15 +402,52 @@
   font-size: 0.78rem;
   padding: 0.75rem;
 }
-.code-zeile {
+.svg-code {
   white-space: pre-wrap;
   word-break: break-all;
-  border-left: 3px solid transparent;
-  padding-left: 0.4rem;
 }
-.code-zeile.markiert {
-  background: #78350f;
-  border-left-color: #f59e0b;
+.code-element.markiert,
+.code-befehl.markiert {
+  background: #422006;
+}
+.code-befehl:hover,
+.code-befehl.aktiv {
+  background: #f59e0b;
+  color: #0f172a;
+  border-radius: 2px;
+}
+.svg-vorschau {
+  display: flex;
+  flex-direction: column;
+}
+.befehl-info {
+  min-height: 3em;
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+.befehl-linie {
+  fill: none;
+  stroke: #dc2626;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+.befehl-hebel {
+  stroke: #2563eb;
+  stroke-width: 0.3;
+}
+.befehl-kontrolle {
+  fill: #fff;
+  stroke: #2563eb;
+  stroke-width: 0.3;
+}
+.befehl-punkt {
+  fill: #dc2626;
+}
+.befehl-linie,
+.befehl-hebel,
+.befehl-kontrolle,
+.befehl-punkt {
+  pointer-events: none;
 }
 
 /* ---- Simulation ---- */
@@ -556,4 +593,52 @@
 .regler select {
   grid-column: 1 / -1;
   font: inherit;
+}
+
+/* ---- Zuschnitt ---- */
+.zuschnitt-maske {
+  fill: rgba(15, 23, 42, 0.55);
+  stroke: #f59e0b;
+  stroke-width: 0;
+}
+.zahlenfelder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.75rem;
+}
+.zahlenfeld {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+.zahlenfeld input {
+  font: inherit;
+  min-width: 0;
+}
+
+/* ---- Über und Lizenzen ---- */
+.ueber {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+.lizenztext {
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  padding: 0.75rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.bibliotheken {
+  width: 100%;
+  border-collapse: collapse;
+}
+.bibliotheken td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.3rem 0.5rem;
+  vertical-align: top;
 }

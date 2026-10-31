@@ -16,6 +16,8 @@ export interface BildansichtProps {
   /** Überlagerung in Pixelkoordinaten. `linie` = Strichbreite für ca. 1,5 Bildschirmpixel. */
   ueberlagerung?: (linie: number) => ComponentChildren;
   onKlick?: (x: number, y: number) => void;
+  /** Auswahlmodus: Ziehen zieht ein Rechteck auf (in Pixeln), statt das Bild zu verschieben. */
+  onAuswahl?: (r: { x: number; y: number; breite: number; hoehe: number }) => void;
 }
 
 interface Sicht {
@@ -28,7 +30,7 @@ export function Bildansicht(props: BildansichtProps) {
   const rahmen = useRef<HTMLDivElement>(null);
   const leinwand = useRef<HTMLCanvasElement>(null);
   const [sicht, setSicht] = useState<Sicht>({ massstab: 1, x: 0, y: 0 });
-  const ziehen = useRef<{ x: number; y: number; sx: number; sy: number; bewegt: boolean } | null>(null);
+  const ziehen = useRef<{ x: number; y: number; sx: number; sy: number; bewegt: boolean; px: number; py: number } | null>(null);
 
   /** Ganzes Bild einpassen */
   const einpassen = () => {
@@ -66,6 +68,12 @@ export function Bildansicht(props: BildansichtProps) {
     return () => r.removeEventListener('wheel', rad);
   }, []);
 
+  /** Bildkoordinaten unter dem Zeiger, als Kommazahl und auch außerhalb des Bildes */
+  const bildpunkt = (e: PointerEvent | MouseEvent) => {
+    const box = rahmen.current!.getBoundingClientRect();
+    return { x: (e.clientX - box.left - sicht.x) / sicht.massstab, y: (e.clientY - box.top - sicht.y) / sicht.massstab };
+  };
+
   const pixelUnter = (e: PointerEvent | MouseEvent) => {
     const box = rahmen.current!.getBoundingClientRect();
     const x = Math.floor((e.clientX - box.left - sicht.x) / sicht.massstab);
@@ -81,7 +89,8 @@ export function Bildansicht(props: BildansichtProps) {
         data-testid="bildansicht"
         onPointerDown={(e) => {
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          ziehen.current = { x: e.clientX, y: e.clientY, sx: sicht.x, sy: sicht.y, bewegt: false };
+          const b = bildpunkt(e);
+          ziehen.current = { x: e.clientX, y: e.clientY, sx: sicht.x, sy: sicht.y, bewegt: false, px: b.x, py: b.y };
         }}
         onPointerMove={(e) => {
           const z = ziehen.current;
@@ -89,7 +98,10 @@ export function Bildansicht(props: BildansichtProps) {
             const dx = e.clientX - z.x;
             const dy = e.clientY - z.y;
             if (Math.abs(dx) + Math.abs(dy) > 3) z.bewegt = true;
-            if (z.bewegt) setSicht((s) => ({ ...s, x: z.sx + dx, y: z.sy + dy }));
+            if (z.bewegt && props.onAuswahl) {
+              const b = bildpunkt(e);
+              props.onAuswahl({ x: z.px, y: z.py, breite: b.x - z.px, hoehe: b.y - z.py });
+            } else if (z.bewegt) setSicht((s) => ({ ...s, x: z.sx + dx, y: z.sy + dy }));
           }
           zeiger.value = pixelUnter(e);
         }}

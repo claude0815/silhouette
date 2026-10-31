@@ -22,6 +22,7 @@ export const de = {
     quellcode: 'Quellcode auf GitHub',
     lizenz: 'Lizenz: GPL-2.0-or-later',
     cutterTest: 'Machbarkeitstest Cutter',
+    ueber: 'Über und Lizenzen',
     rechnet: 'rechnet …',
     rechenzeit: (ms: number) => `${ms.toFixed(0)} ms`,
     fehler: 'Fehler',
@@ -60,6 +61,17 @@ export const de = {
       groesse: (b: number, h: number) => `${b} × ${h} Pixel = ${(b * h).toLocaleString('de-DE')} Pixel`,
       ungueltig: 'Diese Datei konnte nicht als Bild gelesen werden.',
       bleibtLokal: 'Das Bild bleibt auf diesem Gerät. Es wird nichts hochgeladen.',
+      zuschnitt: 'Zuschnitt',
+      zuschneiden: 'Zuschneiden …',
+      zuschnittHinweis: 'Im Bild ein Rechteck aufziehen oder die Werte eingeben.',
+      uebernehmen: 'Übernehmen',
+      abbrechen: 'Abbrechen',
+      aufheben: 'Zuschnitt aufheben',
+      zuschnittInfo: (x: number, y: number, b: number, h: number) => `Ausschnitt ${b} × ${h} Pixel ab (${x} | ${y}) des Originals`,
+      links: 'Links (x)',
+      oben: 'Oben (y)',
+      breite: 'Breite',
+      hoehe: 'Höhe',
       erklaerung: [
         'Ein Rasterbild ist eine Tabelle aus Pixeln. Jedes Pixel hat drei Farbwerte: Rot, Grün und Blau, jeweils von 0 bis 255. Dazu kommt bei PNG oft ein vierter Wert für die Deckkraft (Alpha).',
         'Die Auflösung gibt an, wie viele Pixel das Bild hat. Mehr Pixel bedeuten feinere Details, aber auch mehr Rechenarbeit.',
@@ -213,6 +225,17 @@ export const de = {
       kopiert: 'Kopiert',
       massstab: (mmJePx: number) => `1 Pixel = ${mmJePx.toFixed(3).replace('.', ',')} mm`,
       formen: (n: number) => (n === 1 ? '1 Form' : `${n} Formen`),
+      befehlHinweis: 'Über eine Form oder einen Befehl im Code fahren.',
+      befehl: {
+        M: (p: string) => `M – Stift anheben und bei ${p} aufsetzen: Beginn eines Teilpfads.`,
+        L: (von: string, p: string) => `L – gerade Strecke von ${von} nach ${p}.`,
+        C: (von: string, c1: string, c2: string, p: string) =>
+          `C – kubische Bézier-Kurve von ${von} nach ${p}, gezogen von den Kontrollpunkten ${c1} und ${c2}.`,
+        Z: (von: string, p: string) => `Z – Teilpfad schließen: gerade zurück von ${von} zum Anfang ${p}.`,
+        sonst: (name: string) =>
+          name === 'Z' ? 'Z – Teilpfad schließen. Der letzte Punkt liegt schon am Anfang, es kommt keine Linie dazu.' : name,
+      },
+      form: (n: number) => `Form ${n}`,
       erklaerung: [
         'Das SVG-Dokument beschreibt die Formen als Text. width und height mit „mm“ legen die echte Größe fest, die viewBox das Koordinatensystem. Hier ist 1 Einheit = 1 mm, der Ursprung liegt oben links, y zeigt nach unten.',
         'Jede Form ist ein <path>. Im d-Attribut stehen Befehle: M setzt den Stift an, L zieht eine Strecke, C eine Bézier-Kurve, Z schließt den Teilpfad.',
@@ -220,6 +243,30 @@ export const de = {
         'Fahre über eine Form oder über eine Zeile im Code: Das Gegenstück wird markiert.',
       ],
     },
+  },
+  ueber: {
+    titel: 'Über und Lizenzen',
+    zurueck: 'Zurück zur App',
+    absaetze: [
+      '„Vom Pixel zum Schnitt“ zeigt Schritt für Schritt, wie aus einem Pixelbild Schnittpfade für einen Schneideplotter werden. Jeder Schritt ist sichtbar und einstellbar, der Quellcode ist selbst als Lernmaterial gedacht.',
+      'Die App läuft vollständig im Browser. Bilder und Daten verlassen das Gerät nicht; es gibt kein Tracking und keine Anmeldung.',
+    ],
+    lizenzTitel: 'Lizenz dieser App',
+    lizenzText:
+      'Die App steht unter der GNU General Public License, Version 2 oder (nach Wahl) jeder späteren Version (GPL-2.0-or-later). Alle dürfen sie nutzen, verändern und weitergeben, auch kommerziell. Weiterentwicklungen müssen wieder unter der GPL offen sein.',
+    quellcode: 'Quellcode',
+    gplVolltext: 'Volltext der GPL-2.0',
+    fremdTitel: 'Verwendete Bibliotheken',
+    fremdHinweis: 'Diese Bibliotheken sind im ausgelieferten JavaScript enthalten. Die Lizenzen wurden am jeweiligen Original-Repository geprüft.',
+    lizenztext: 'Lizenztext',
+    uebernommenTitel: 'Übernommenes Wissen und übernommener Code',
+    uebernommenText:
+      'Befehlsfolgen, Geräte-IDs, Bluetooth-Kennungen und Abläufe für die Silhouette-Cutter stammen aus inkscape-silhouette (Dateien silhouette/Graphtec.py, Transport.py und BLETransport.py, Commit f376a08), nach TypeScript übertragen. Die Herkunft ist in den betroffenen Dateien vermerkt.',
+    uebernommenCopyright:
+      '(c) 2013, 2014 jw@suse.de · (c) 2016 juewei@fabmail.org · (c) 2016 Alexander Wenger · (c) 2017 Johann Gail · (c) 2026 inkscape-silhouette contributors – „Distribute under GPLv2 or ask“.',
+    algorithmenTitel: 'Algorithmen',
+    algorithmenText:
+      'Schwellwert, Otsu-Verfahren (N. Otsu, 1979), Marching Squares, Douglas-Peucker (D. Douglas, T. Peucker, 1973) und die Bézier-Glättung sind für diese App selbst geschrieben und auf Deutsch kommentiert.',
   },
   cutterTest: {
     titel: 'Machbarkeitstest Cutter',
