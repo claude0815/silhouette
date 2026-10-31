@@ -125,3 +125,20 @@ Der Machbarkeitstest vor Ort verschiebt sich. Bis dahin wird alles vorbereitet, 
 
 - Bluetooth: UUIDs und Ablauf stehen in `docs/protokoll.md`. Geprüft ist der BLE-Weg dort nur mit einem Cameo 5 Alpha. Ob Cameo 4, Cameo 5 und Portrait 3/4 per BLE erreichbar sind, klärt der Machbarkeitstest (Web Bluetooth kann kein klassisches Bluetooth).
 - Software an der Schule öffnet kein SVG (31.10.2026 bestätigt), DXF bleibt der Weg über Silhouette Studio.
+
+## Stufe 2 – SVG lernen (Plan, 31.10.2026)
+
+**Entscheidungen**
+
+- Editor: CodeMirror 6 (MIT, am Original geprüft), wird mitgeliefert.
+- Aufbau: drei Bereiche oben – *Nachzeichnen* (Schritte 1–8), *SVG-Werkstatt*, *Simulation*. Die Werkstatt geht auch ohne Bild.
+- Ein zentrales SVG-Dokument (`src/app/dokument.ts`): Es folgt dem Nachzeichnen, bis man es in der Werkstatt bearbeitet; danach ist es eine eigene Fassung (mit Knopf „wieder aus dem Nachzeichnen übernehmen“). Simulation und Export lesen nur dieses Dokument.
+
+**Umsetzung in Schritten**
+
+1. SVG-Leser erweitern: Elementbaum mit Gruppen, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon` als Pfade (Umrechnung sichtbar), Bögen `A`, `transform`, `fill`/`stroke` (auch aus `style` und vererbt), fehlertolerantes Lesen von `d` (gültiger Teil wird gezeichnet, Fehlerstelle markiert), Position jeder Zahl im Text.
+2. Cutter-Checks als reine Funktionen: Füllungen, offene/fast geschlossene Pfade, Löcher, Inseln bei Schablonen, doppelte und winzige Segmente, außerhalb von Matte und Dokument.
+3. Zentrales Dokument und Bereichsleiste; Simulation wird eigener Bereich.
+4. Werkstatt: Editor mit Syntaxfarben und Fehlermarken, Live-Vorschau mit Raster und Lineal in mm, Cutter-Ansicht (nur Konturen), Verknüpfung Grafik ↔ Code je Befehl, Datei öffnen und speichern.
+5. Pfad-Erklärer: Befehle mit Bedeutung und absoluten Koordinaten; Punkte und Kontrollpunkte in der Grafik ziehen, der Code ändert sich mit.
+6. Beispiele und Mini-Aufgaben als Karten, Aufgaben mit automatischer Prüfung.

@@ -9,17 +9,21 @@
  *   S x2 y2 x y   wie C, der erste Kontrollpunkt wird am vorigen gespiegelt
  *   Q x1 y1 x y   quadratische Bézier-Kurve mit einem Kontrollpunkt
  *   T x y         wie Q, Kontrollpunkt gespiegelt
+ *   A rx ry drehung großerBogen imUhrzeigersinn x y   Ellipsenbogen bis (x | y)
  *   Z             Teilpfad schließen (zurück zum Anfang)
  * Großbuchstaben = absolute Koordinaten, Kleinbuchstaben = relativ zum aktuellen Punkt.
  * Folgen auf einen Befehl mehr Zahlen als nötig, wird er wiederholt (nach M als L).
- *
- * Bögen (A) kommen in einer späteren Stufe dazu.
  */
 import type { Punkt } from '../cutter/types';
 
-export type BefehlTyp = 'M' | 'L' | 'H' | 'V' | 'C' | 'S' | 'Q' | 'T' | 'Z';
+export type BefehlTyp = 'M' | 'L' | 'H' | 'V' | 'C' | 'S' | 'Q' | 'T' | 'A' | 'Z';
 
-const ANZAHL_WERTE: Record<BefehlTyp, number> = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, Z: 0 };
+export const ANZAHL_WERTE: Record<BefehlTyp, number> = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7, Z: 0 };
+
+export interface Textstelle {
+  start: number;
+  ende: number;
+}
 
 export interface PfadBefehl {
   typ: BefehlTyp;
@@ -28,6 +32,8 @@ export interface PfadBefehl {
   /** Position im d-Text: erstes Zeichen und Ende (exklusiv), für die Markierung im Code */
   start: number;
   ende: number;
+  /** Position jeder Zahl im Text – zum Ändern beim Ziehen von Punkten */
+  zahlen: Textstelle[];
 }
 
 export class PfadFehler extends Error {
@@ -41,64 +47,110 @@ export class PfadFehler extends Error {
   }
 }
 
-/** Zerlegt den d-Text in Befehle. Wirft PfadFehler mit der Stelle des Fehlers. */
-export function lesePfad(d: string): PfadBefehl[] {
-  const befehle: PfadBefehl[] = [];
-  // Ein Wort ist ein Befehlsbuchstabe oder eine Zahl (auch „-1.5e-3“ oder „.5“).
-  const muster = /([MmLlHhVvCcSsQqTtZzAa])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)|([^\s,])/g;
-  let aktuell: PfadBefehl | null = null;
-  let m: RegExpExecArray | null;
+export interface PfadLesung {
+  befehle: PfadBefehl[];
+  /** Erster Fehler; die Befehle davor sind gültig und werden gezeichnet. */
+  fehler?: { text: string; position: number };
+}
 
-  const abschliessen = () => {
-    if (!aktuell) return;
-    const n = ANZAHL_WERTE[aktuell.typ];
-    if (n === 0 ? aktuell.werte.length > 0 : aktuell.werte.length === 0 || aktuell.werte.length % n !== 0) {
-      throw new PfadFehler(
-        `Befehl ${aktuell.relativ ? aktuell.typ.toLowerCase() : aktuell.typ} erwartet ${n === 0 ? 'keine' : `${n}`} Zahlen` +
-          (n > 0 ? ` (oder ein Vielfaches), hat aber ${aktuell.werte.length}.` : '.'),
-        aktuell.start,
-      );
-    }
-    // Wiederholungen aufteilen, damit jeder Befehl genau einen Satz Zahlen hat
-    if (n > 0 && aktuell.werte.length > n) {
-      const { werte, relativ, start, ende } = aktuell;
-      const folgeTyp: BefehlTyp = aktuell.typ === 'M' ? 'L' : aktuell.typ;
-      for (let i = 0; i < werte.length; i += n) {
-        befehle.push({ typ: i === 0 ? aktuell.typ : folgeTyp, relativ, werte: werte.slice(i, i + n), start, ende });
-      }
-    } else {
-      befehle.push(aktuell);
-    }
+const ZAHL = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/y;
+
+/**
+ * Liest den d-Text Zeichen für Zeichen. Bei einem Fehler wird nicht abgebrochen:
+ * Alle vollständigen Befehle davor bleiben erhalten (so macht es auch der Browser),
+ * und die Fehlerstelle wird gemeldet.
+ */
+export function lesePfadTolerant(d: string): PfadLesung {
+  const befehle: PfadBefehl[] = [];
+  let aktuell: { typ: BefehlTyp; relativ: boolean; start: number; werte: number[]; zahlen: Textstelle[] } | null = null;
+  let fehler: PfadLesung['fehler'];
+
+  /** Schließt den laufenden Befehl ab und teilt Wiederholungen auf. */
+  const abschliessen = (): boolean => {
+    if (!aktuell) return true;
+    const a = aktuell;
     aktuell = null;
+    const n = ANZAHL_WERTE[a.typ];
+    const name = a.relativ ? a.typ.toLowerCase() : a.typ;
+    if (n === 0) {
+      befehle.push({ typ: a.typ, relativ: a.relativ, werte: [], start: a.start, ende: a.start + 1, zahlen: [] });
+      if (a.werte.length > 0) {
+        fehler = { text: `Befehl ${name} erwartet keine Zahlen.`, position: a.zahlen[0]!.start };
+        return false;
+      }
+      return true;
+    }
+    const gruppen = Math.floor(a.werte.length / n);
+    for (let g = 0; g < gruppen; g++) {
+      const zahlen = a.zahlen.slice(g * n, (g + 1) * n);
+      befehle.push({
+        // Nach M gelten weitere Zahlenpaare als L
+        typ: g > 0 && a.typ === 'M' ? 'L' : a.typ,
+        relativ: a.relativ,
+        werte: a.werte.slice(g * n, (g + 1) * n),
+        start: g === 0 ? a.start : zahlen[0]!.start,
+        ende: zahlen[n - 1]!.ende,
+        zahlen,
+      });
+    }
+    if (a.werte.length === 0 || a.werte.length % n !== 0) {
+      fehler = {
+        text: `Befehl ${name} erwartet ${n} Zahlen (oder ein Vielfaches), hat aber ${a.werte.length}.`,
+        // Fehlt schon im ersten Satz etwas, ist der Befehl selbst die Fehlerstelle, sonst die übrige Zahl
+        position: gruppen === 0 ? a.start : a.zahlen[gruppen * n]!.start,
+      };
+      return false;
+    }
+    return true;
   };
 
-  while ((m = muster.exec(d)) !== null) {
-    if (m[1]) {
-      abschliessen();
-      const buchstabe = m[1];
-      if (buchstabe === 'A' || buchstabe === 'a') {
-        throw new PfadFehler('Bögen (A) werden noch nicht unterstützt.', m.index);
-      }
-      aktuell = {
-        typ: buchstabe.toUpperCase() as BefehlTyp,
-        relativ: buchstabe === buchstabe.toLowerCase(),
-        werte: [],
-        start: m.index,
-        ende: m.index + 1,
-      };
-    } else if (m[2]) {
-      if (!aktuell) throw new PfadFehler('Ein Pfad muss mit einem Befehl beginnen, meist M.', m.index);
-      aktuell.werte.push(Number(m[2]));
-      aktuell.ende = m.index + m[2].length;
-    } else {
-      throw new PfadFehler(`Unerwartetes Zeichen „${m[3]}“.`, m.index);
+  let pos = 0;
+  while (pos < d.length) {
+    const z = d[pos]!;
+    if (/[\s,]/.test(z)) {
+      pos++;
+      continue;
     }
+    if (/[a-zA-Z]/.test(z)) {
+      if (!abschliessen()) return { befehle, fehler };
+      const typ = z.toUpperCase() as BefehlTyp;
+      if (!(typ in ANZAHL_WERTE)) return { befehle, fehler: { text: `Unbekannter Befehl „${z}“.`, position: pos } };
+      if (befehle.length === 0 && typ !== 'M') return { befehle, fehler: { text: 'Ein Pfad muss mit M beginnen.', position: pos } };
+      aktuell = { typ, relativ: z === z.toLowerCase(), start: pos, werte: [], zahlen: [] };
+      pos++;
+      continue;
+    }
+    if (/[+\-.\d]/.test(z)) {
+      if (!aktuell) return { befehle, fehler: { text: 'Ein Pfad muss mit einem Befehl beginnen, meist M.', position: pos } };
+      // Bei A sind die Werte 4 und 5 Schalter (0 oder 1) und dürfen ohne Trennzeichen stehen: „A 5 5 0 01 10 10“
+      const stelle = aktuell.werte.length % 7;
+      if (aktuell.typ === 'A' && (stelle === 3 || stelle === 4)) {
+        if (z !== '0' && z !== '1') return { befehle, fehler: { text: 'Bei A müssen die Werte 4 und 5 jeweils 0 oder 1 sein.', position: pos } };
+        aktuell.werte.push(Number(z));
+        aktuell.zahlen.push({ start: pos, ende: pos + 1 });
+        pos++;
+        continue;
+      }
+      ZAHL.lastIndex = pos;
+      const m = ZAHL.exec(d);
+      if (!m) return { befehle, fehler: { text: `Unerwartetes Zeichen „${z}“.`, position: pos } };
+      aktuell.werte.push(Number(m[0]));
+      aktuell.zahlen.push({ start: pos, ende: pos + m[0].length });
+      pos += m[0].length;
+      continue;
+    }
+    abschliessen();
+    return { befehle, fehler: fehler ?? { text: `Unerwartetes Zeichen „${z}“.`, position: pos } };
   }
   abschliessen();
-  if (befehle.length > 0 && befehle[0]!.typ !== 'M') {
-    throw new PfadFehler('Ein Pfad muss mit M beginnen.', befehle[0]!.start);
-  }
-  return befehle;
+  return fehler ? { befehle, fehler } : { befehle };
+}
+
+/** Wie lesePfadTolerant, wirft aber beim ersten Fehler einen PfadFehler. */
+export function lesePfad(d: string): PfadBefehl[] {
+  const r = lesePfadTolerant(d);
+  if (r.fehler) throw new PfadFehler(r.fehler.text, r.fehler.position);
+  return r.befehle;
 }
 
 /**
@@ -113,6 +165,83 @@ export interface Teilpfad {
   startBefehl: number;
   abschnitte: Abschnitt[];
   geschlossen: boolean;
+}
+
+/**
+ * Ellipsenbogen → kubische Bézier-Kurven (Verfahren aus der SVG-Spezifikation, Anhang F.6).
+ *
+ * Ein Bogen ist durch Anfang, Ende, die Radien rx und ry, die Drehung der Ellipse und zwei
+ * Schalter festgelegt: Durch zwei Punkte passen meist zwei Ellipsen, und auf jeder gibt es
+ * einen kurzen und einen langen Weg. „großerBogen“ wählt den langen, „imUhrzeigersinn“ die
+ * Richtung. Gerechnet wird so:
+ *   1. Mittelpunkt der Ellipse und Start- und Öffnungswinkel bestimmen.
+ *   2. Den Bogen in Stücke von höchstens 90° teilen.
+ *   3. Jedes Stück durch eine kubische Kurve annähern: Für ein Kreisstück mit Winkel δ liegen
+ *      die Kontrollpunkte k = 4/3 · tan(δ/4) Radien entlang der Tangente. Der Fehler ist winzig
+ *      (bei 90° etwa 0,03 % des Radius).
+ */
+export function bogenZuBeziers(
+  von: Punkt,
+  rxEin: number,
+  ryEin: number,
+  drehungGrad: number,
+  grosserBogen: boolean,
+  imUhrzeigersinn: boolean,
+  nach: Punkt,
+): Array<{ typ: 'L'; p: Punkt } | { typ: 'C'; c1: Punkt; c2: Punkt; p: Punkt }> {
+  if (von.x === nach.x && von.y === nach.y) return [];
+  let rx = Math.abs(rxEin);
+  let ry = Math.abs(ryEin);
+  if (rx === 0 || ry === 0) return [{ typ: 'L', p: nach }]; // ohne Radius: gerade Strecke
+
+  const phi = (drehungGrad * Math.PI) / 180;
+  const cos = Math.cos(phi);
+  const sin = Math.sin(phi);
+  // Anfangspunkt im gedrehten System, bezogen auf die Mitte der Sehne
+  const dx = (von.x - nach.x) / 2;
+  const dy = (von.y - nach.y) / 2;
+  const x1 = cos * dx + sin * dy;
+  const y1 = -sin * dx + cos * dy;
+  // Zu kleine Radien so weit vergrößern, dass der Bogen gerade hinreicht
+  const lambda = (x1 * x1) / (rx * rx) + (y1 * y1) / (ry * ry);
+  if (lambda > 1) {
+    rx *= Math.sqrt(lambda);
+    ry *= Math.sqrt(lambda);
+  }
+  const zaehler = rx * rx * ry * ry - rx * rx * y1 * y1 - ry * ry * x1 * x1;
+  const nenner = rx * rx * y1 * y1 + ry * ry * x1 * x1;
+  const faktor = (grosserBogen === imUhrzeigersinn ? -1 : 1) * Math.sqrt(Math.max(0, zaehler / nenner));
+  const cxs = (faktor * rx * y1) / ry;
+  const cys = (-faktor * ry * x1) / rx;
+  const cx = cos * cxs - sin * cys + (von.x + nach.x) / 2;
+  const cy = sin * cxs + cos * cys + (von.y + nach.y) / 2;
+
+  const winkel = (ux: number, uy: number, vx: number, vy: number) => Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+  const theta1 = winkel(1, 0, (x1 - cxs) / rx, (y1 - cys) / ry);
+  let delta = winkel((x1 - cxs) / rx, (y1 - cys) / ry, (-x1 - cxs) / rx, (-y1 - cys) / ry);
+  if (!imUhrzeigersinn && delta > 0) delta -= 2 * Math.PI;
+  if (imUhrzeigersinn && delta < 0) delta += 2 * Math.PI;
+
+  const anzahl = Math.max(1, Math.ceil(Math.abs(delta) / (Math.PI / 2) - 1e-9));
+  const schritt = delta / anzahl;
+  const k = (4 / 3) * Math.tan(schritt / 4);
+  // Punkt auf dem Einheitskreis → Punkt auf der gedrehten, verschobenen Ellipse
+  const aufEllipse = (ux: number, uy: number): Punkt => ({
+    x: cx + rx * cos * ux - ry * sin * uy,
+    y: cy + rx * sin * ux + ry * cos * uy,
+  });
+  const stuecke: Array<{ typ: 'C'; c1: Punkt; c2: Punkt; p: Punkt }> = [];
+  for (let i = 0; i < anzahl; i++) {
+    const a = theta1 + i * schritt;
+    const b = a + schritt;
+    stuecke.push({
+      typ: 'C',
+      c1: aufEllipse(Math.cos(a) - k * Math.sin(a), Math.sin(a) + k * Math.cos(a)),
+      c2: aufEllipse(Math.cos(b) + k * Math.sin(b), Math.sin(b) - k * Math.cos(b)),
+      p: i === anzahl - 1 ? nach : aufEllipse(Math.cos(b), Math.sin(b)),
+    });
+  }
+  return stuecke;
 }
 
 /**
@@ -188,6 +317,15 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
           neuQ = q;
           break;
         }
+        case 'A': {
+          const ziel = b.relativ ? { x: aktuell.x + w[5]!, y: aktuell.y + w[6]! } : { x: w[5]!, y: w[6]! };
+          const stuecke = bogenZuBeziers(aktuell, w[0]!, w[1]!, w[2]!, w[3] === 1, w[4] === 1, ziel);
+          for (const st of stuecke) tp.abschnitte.push({ ...st, befehl: nr });
+          aktuell = ziel;
+          letzterC = null;
+          letzterQ = null;
+          return;
+        }
       }
       tp.abschnitte.push(a);
       aktuell = a.p;
@@ -202,7 +340,9 @@ export function alsTeilpfade(befehle: readonly PfadBefehl[]): Teilpfad[] {
 export type BefehlsGeometrie =
   | { art: 'punkt'; p: Punkt }
   | { art: 'strecke'; von: Punkt; p: Punkt }
-  | { art: 'kurve'; von: Punkt; c1: Punkt; c2: Punkt; p: Punkt };
+  | { art: 'kurve'; von: Punkt; c1: Punkt; c2: Punkt; p: Punkt }
+  /** Ein Bogen (A) besteht aus mehreren Kurvenstücken. */
+  | { art: 'bogen'; von: Punkt; stuecke: Array<{ c1: Punkt; c2: Punkt; p: Punkt }>; p: Punkt };
 
 /** Geometrie je Befehl (Index wie in `befehle`); Befehle ohne eigene Linie fehlen. */
 export function befehlsGeometrie(befehle: readonly PfadBefehl[]): Map<number, BefehlsGeometrie> {
@@ -211,7 +351,16 @@ export function befehlsGeometrie(befehle: readonly PfadBefehl[]): Map<number, Be
     if (tp.startBefehl >= 0) ergebnis.set(tp.startBefehl, { art: 'punkt', p: tp.start });
     let von = tp.start;
     for (const a of tp.abschnitte) {
-      ergebnis.set(a.befehl, a.typ === 'L' ? { art: 'strecke', von, p: a.p } : { art: 'kurve', von, c1: a.c1, c2: a.c2, p: a.p });
+      const bisher = ergebnis.get(a.befehl);
+      if (befehle[a.befehl]?.typ === 'A' && a.typ === 'C') {
+        // Stücke desselben Bogens sammeln
+        if (bisher?.art === 'bogen') {
+          bisher.stuecke.push({ c1: a.c1, c2: a.c2, p: a.p });
+          bisher.p = a.p;
+        } else ergebnis.set(a.befehl, { art: 'bogen', von, stuecke: [{ c1: a.c1, c2: a.c2, p: a.p }], p: a.p });
+      } else {
+        ergebnis.set(a.befehl, a.typ === 'L' ? { art: 'strecke', von, p: a.p } : { art: 'kurve', von, c1: a.c1, c2: a.c2, p: a.p });
+      }
       von = a.p;
     }
   }
@@ -238,7 +387,12 @@ export function naechsterBefehl(geometrie: ReadonlyMap<number, BefehlsGeometrie>
     else if (g.art === 'strecke') d = strecke(g.von, g.p);
     else {
       const punkte = [g.von];
-      zerlegeBezier(g.von, g.c1, g.c2, g.p, toleranz, punkte);
+      const stuecke = g.art === 'kurve' ? [g] : g.stuecke;
+      let von = g.von;
+      for (const st of stuecke) {
+        zerlegeBezier(von, st.c1, st.c2, st.p, toleranz, punkte);
+        von = st.p;
+      }
       d = Infinity;
       for (let i = 1; i < punkte.length; i++) d = Math.min(d, strecke(punkte[i - 1]!, punkte[i]!));
     }

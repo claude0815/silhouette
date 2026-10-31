@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { istGeschlossen } from '../export/dxf';
 import { erzeugeSvg } from '../pipeline/svg-erzeugen';
 import { laengeInMm, leseElemente, leseSvg, svgZuPolylinien } from './dokument';
-import { alsLinienzug, alsTeilpfade, befehlsGeometrie, lesePfad, naechsterBefehl, PfadFehler } from './pfad';
+import { alsLinienzug, alsTeilpfade, befehlsGeometrie, bogenZuBeziers, lesePfad, lesePfadTolerant, naechsterBefehl, PfadFehler } from './pfad';
 
 describe('lesePfad', () => {
   it('liest Befehle mit ihrer Stelle im Text', () => {
@@ -34,7 +34,6 @@ describe('lesePfad', () => {
       expect((e as PfadFehler).message).toMatch(/L erwartet 2 Zahlen/);
     }
     expect(() => lesePfad('L 1 1')).toThrow(/mit M beginnen/);
-    expect(() => lesePfad('M 0 0 A 5 5 0 0 1 10 10')).toThrow(/Bögen/);
     expect(() => lesePfad('M 0 0 # 1')).toThrow(/Unerwartetes Zeichen/);
   });
 });
@@ -132,9 +131,9 @@ describe('leseSvg', () => {
   it('gibt Hinweise statt abzubrechen', () => {
     const dok = leseSvg('<svg width="100" height="50"><rect x="1"/><path d="M 0 0 L"/><path d="M 0 0 L 96 0"/></svg>');
     const texte = dok.hinweise.map((h) => h.text).join(' | ');
-    expect(texte).toMatch(/Keine viewBox/);
+    expect(texte).toMatch(/Keine gültige viewBox/);
     expect(texte).toMatch(/width ohne Einheit mm/);
-    expect(texte).toMatch(/<rect> wird erst in Stufe 2/);
+    expect(texte).toMatch(/<rect> hat keine gültige Größe/);
     expect(texte).toMatch(/L erwartet 2 Zahlen/);
     // Der gültige Pfad wird trotzdem gelesen: 96 px = 25,4 mm
     expect(svgZuPolylinien(dok)[0]!.at(-1)!.x).toBeCloseTo(25.4);
@@ -166,5 +165,74 @@ describe('Geometrie je Befehl', () => {
     expect(naechsterBefehl(g, { x: 5, y: 0.3 }, 0.1)).toBe(1); // auf der oberen Strecke
     expect(naechsterBefehl(g, { x: 13.8, y: 5 }, 0.1)).toBe(2); // am Bauch der Kurve
     expect(naechsterBefehl(g, { x: 5, y: 5.2 }, 0.1)).toBe(3); // auf der Schlussdiagonale
+  });
+});
+
+describe('Fehlertolerantes Lesen', () => {
+  it('liefert alle gültigen Befehle vor dem Fehler und die Fehlerstelle', () => {
+    const d = 'M 0 0 L 10 0 L 10 10 X 5';
+    const r = lesePfadTolerant(d);
+    expect(r.befehle.map((b) => b.typ)).toEqual(['M', 'L', 'L']);
+    expect(r.fehler?.text).toMatch(/Unbekannter Befehl „X“/);
+    expect(d[r.fehler!.position]).toBe('X');
+  });
+
+  it('behält vollständige Wiederholungen und markiert die übrige Zahl', () => {
+    const d = 'M 0 0 L 1 2 3';
+    const r = lesePfadTolerant(d);
+    expect(r.befehle).toHaveLength(2);
+    expect(d.slice(r.fehler!.position)).toBe('3');
+  });
+
+  it('merkt sich die Stelle jeder Zahl', () => {
+    const d = 'M10,20 l-3.5.5';
+    const [, l] = lesePfad(d);
+    expect(l!.zahlen.map((z) => d.slice(z.start, z.ende))).toEqual(['-3.5', '.5']);
+  });
+
+  it('Wiederholungen bekommen eigene Textstellen', () => {
+    const d = 'M 0 0 1 1 2 2';
+    const b = lesePfad(d);
+    expect(b.map((x) => d.slice(x.start, x.ende))).toEqual(['M 0 0', '1 1', '2 2']);
+  });
+});
+
+describe('Bögen (A)', () => {
+  it('versteht Schalter ohne Trennzeichen', () => {
+    const [, a] = lesePfad('M0 0A5 5 0 0110 0');
+    expect(a!.werte).toEqual([5, 5, 0, 0, 1, 10, 0]);
+    expect(() => lesePfad('M0 0 A 5 5 0 2 1 10 0')).toThrow(/0 oder 1/);
+  });
+
+  it('ein Halbkreis wird zu zwei Viertelkurven, die auf dem Kreis liegen', () => {
+    // Halbkreis von (0|0) nach (20|0) mit Radius 10, Mittelpunkt (10|0)
+    const st = bogenZuBeziers({ x: 0, y: 0 }, 10, 10, 0, false, true, { x: 20, y: 0 });
+    expect(st).toHaveLength(2);
+    const [tp] = alsTeilpfade(lesePfad('M 0 0 A 10 10 0 0 1 20 0'));
+    for (const p of alsLinienzug(tp!, 0.001)) expect(Math.hypot(p.x - 10, p.y)).toBeCloseTo(10, 2);
+    // Im Uhrzeigersinn (y nach unten) geht der Bogen von links nach rechts über oben, also y < 0
+    expect(Math.min(...alsLinienzug(tp!, 0.01).map((p) => p.y))).toBeCloseTo(-10, 1);
+  });
+
+  it('großer und kleiner Bogen, zu kleine Radien werden vergrößert', () => {
+    const [klein] = alsTeilpfade(lesePfad('M 0 0 A 20 20 0 0 1 20 0'));
+    const [gross] = alsTeilpfade(lesePfad('M 0 0 A 20 20 0 1 1 20 0'));
+    const laenge = (pts: { x: number; y: number }[]) => pts.slice(1).reduce((s, p, i) => s + Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y), 0);
+    expect(laenge(alsLinienzug(gross!, 0.01))).toBeGreaterThan(3 * laenge(alsLinienzug(klein!, 0.01)));
+    // Radius 1 reicht nicht für 20 Abstand → wird zum Halbkreis mit Radius 10
+    const [zuKlein] = alsTeilpfade(lesePfad('M 0 0 A 1 1 0 0 1 20 0'));
+    expect(Math.min(...alsLinienzug(zuKlein!, 0.01).map((p) => p.y))).toBeCloseTo(-10, 1);
+  });
+
+  it('Radius 0 ergibt eine Strecke, gleicher Punkt gar nichts', () => {
+    expect(bogenZuBeziers({ x: 0, y: 0 }, 0, 5, 0, false, true, { x: 3, y: 4 })).toEqual([{ typ: 'L', p: { x: 3, y: 4 } }]);
+    expect(bogenZuBeziers({ x: 1, y: 1 }, 5, 5, 0, false, true, { x: 1, y: 1 })).toEqual([]);
+  });
+
+  it('die Geometrie eines Bogens fasst seine Stücke zusammen', () => {
+    const g = befehlsGeometrie(lesePfad('M 0 0 A 10 10 0 1 1 0 0.001'));
+    const bogen = g.get(1);
+    expect(bogen?.art).toBe('bogen');
+    if (bogen?.art === 'bogen') expect(bogen.stuecke.length).toBe(4);
   });
 });

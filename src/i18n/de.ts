@@ -232,6 +232,8 @@ export const de = {
         C: (von: string, c1: string, c2: string, p: string) =>
           `C – kubische Bézier-Kurve von ${von} nach ${p}, gezogen von den Kontrollpunkten ${c1} und ${c2}.`,
         Z: (von: string, p: string) => `Z – Teilpfad schließen: gerade zurück von ${von} zum Anfang ${p}.`,
+        A: (von: string, p: string, stuecke: number) =>
+          `A – Ellipsenbogen von ${von} nach ${p}. Für den Schnitt in ${stuecke} ${stuecke === 1 ? 'Bézier-Kurve' : 'Bézier-Kurven'} umgerechnet.`,
         sonst: (name: string) =>
           name === 'Z' ? 'Z – Teilpfad schließen. Der letzte Punkt liegt schon am Anfang, es kommt keine Linie dazu.' : name,
       },

@@ -8,7 +8,7 @@ import { formAnPunkt } from '../../pipeline/geometrie';
 import { istGerade, type Bezierpfad } from '../../pipeline/glaetten';
 import { FALL_SEGMENTE, kantenmitte, zellenMitKontur } from '../../pipeline/konturen';
 import { svgZahl, teilpfad } from '../../pipeline/svg-erzeugen';
-import { leseSvg } from '../../svg/dokument';
+import { leseSvg, zeichenDaten } from '../../svg/dokument';
 import { befehlsGeometrie, naechsterBefehl, type BefehlsGeometrie } from '../../svg/pfad';
 import { t } from '../../i18n/de';
 import { Bildansicht } from '../Bildansicht';
@@ -372,6 +372,7 @@ function befehlErklaerung(typ: string, g: BefehlsGeometrie | undefined): string 
   // Z zeichnet eine Strecke zurück zum Anfang des aktuellen Teilpfads; dieser Anfang ist g.p.
   if (typ === 'Z' && g.art === 'strecke') return b.Z(pkt(g.von), pkt(g.p));
   if (g.art === 'strecke') return b.L(pkt(g.von), pkt(g.p));
+  if (g.art === 'bogen') return b.A(pkt(g.von), pkt(g.p), g.stuecke.length);
   return b.C(pkt(g.von), pkt(g.c1), pkt(g.c2), pkt(g.p));
 }
 
@@ -391,7 +392,8 @@ export function Schritt8() {
     dok.pfade.forEach((p, pi) => {
       t.push({ text: text.slice(pos, p.element.start) });
       let q = p.element.start;
-      p.befehle.forEach((b, bi) => {
+      // Bei umgerechneten Formen liegen die Befehle nicht im Dokumenttext
+      if (!p.umgerechnet) p.befehle.forEach((b, bi) => {
         if (b.start > q) t.push({ text: text.slice(q, b.start), pfad: pi });
         t.push({ text: text.slice(b.start, b.ende), pfad: pi, befehl: bi });
         q = b.ende;
@@ -424,7 +426,7 @@ export function Schritt8() {
           <line y1={i * 10} y2={i * 10} x1={0} x2={dok.breiteMm} class="raster-linie" />
         ))}
         {dok.pfade.map((p, i) => {
-          const d = p.element.attribute.find((a) => a.name === 'd')!.wert;
+          const d = zeichenDaten(text, p);
           return (
             <path
               d={d}
@@ -538,6 +540,10 @@ function Befehlsmarkierung(props: { g: BefehlsGeometrie }) {
   const g = props.g;
   if (g.art === 'punkt') return <circle cx={g.p.x} cy={g.p.y} r={1.2} class="befehl-punkt" />;
   if (g.art === 'strecke') return <line x1={g.von.x} y1={g.von.y} x2={g.p.x} y2={g.p.y} class="befehl-linie" />;
+  if (g.art === 'bogen') {
+    const d = `M${g.von.x} ${g.von.y}` + g.stuecke.map((st) => `C${st.c1.x} ${st.c1.y} ${st.c2.x} ${st.c2.y} ${st.p.x} ${st.p.y}`).join('');
+    return <path d={d} class="befehl-linie" />;
+  }
   return (
     <g>
       <line x1={g.von.x} y1={g.von.y} x2={g.c1.x} y2={g.c1.y} class="befehl-hebel" />
