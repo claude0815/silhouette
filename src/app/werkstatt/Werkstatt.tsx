@@ -12,6 +12,7 @@ import { t } from '../../i18n/de';
 import { aendereText, dokument, nachgezeichnet, oeffneSvgText, STARTDOKUMENT, uebernimmNachzeichnen } from '../dokument';
 import { Editor, type Marke } from './Editor';
 import { Beispiele } from './Beispiele';
+import { Werkzeuge } from './Werkzeuge';
 import { Checks, Erklaerer } from './Seitenleiste';
 import { Vorschau } from './Vorschau';
 import { anStelle, auswahl, cutterAnsicht, dok, markiert, modus, programmText, reiter, springeZu, sprung, zoom, type Reiter } from './zustand';
@@ -284,7 +285,7 @@ export function Werkstatt() {
       </section>
       <aside class="werkstatt-seite">
         <nav class="reiter">
-          {(['erklaerer', 'checks', 'beispiele'] as Reiter[]).map((r) => (
+          {(['erklaerer', 'checks', 'beispiele', 'werkzeuge'] as Reiter[]).map((r) => (
             <button class={reiter.value === r ? 'aktiv' : ''} onClick={() => (reiter.value = r)}>
               {tx.reiter[r]}
             </button>
@@ -294,6 +295,7 @@ export function Werkstatt() {
           {reiter.value === 'erklaerer' && <Erklaerer />}
           {reiter.value === 'checks' && <Checks />}
           {reiter.value === 'beispiele' && <Beispiele />}
+          {reiter.value === 'werkzeuge' && <Werkzeuge />}
         </div>
       </aside>
     </div>

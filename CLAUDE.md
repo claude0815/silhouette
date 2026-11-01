@@ -47,7 +47,7 @@ Die vollständigen Anforderungen stehen in `docs/ANFORDERUNGEN.md`. Lies sie vor
 - `src/export/`: DXF-Export (`dxf.ts`, Format R12, mm, y gespiegelt) und Testformen.
 - Tests liegen neben dem Code als `*.test.ts`; Browsertests in `e2e/*.spec.ts` (laufen auch in GitHub Actions vor dem Deployment).
 - `src/offline/`: Service Worker (Dateiliste schreibt `offline-plugin.ts` beim Bauen) und Anmeldung; neue Versionen erst nach Bestätigung aktiv.
-- `src/programm/`: „SVG per Programm“ (Zeichen-API, Worker mit Zeitlimit); Vorlagen in `src/i18n/programme.de.ts`. `src/werkzeuge/bruecken.ts`: automatische Brücken.
+- `src/programm/`: „SVG per Programm“ (Zeichen-API, Worker mit Zeitlimit); Vorlagen in `src/i18n/programme.de.ts`. `src/werkzeuge/bruecken.ts`: automatische Brücken; `src/werkzeuge/versatz.ts`: Konturen versetzen über eine Abstandskarte (Reiter „Werkzeuge“ der Werkstatt).
 - `.github/workflows/deploy.yml`: Tests, Build und Browsertests bei jedem Push, Deployment auf GitHub Pages nur von `main`.
 - Unterlagen für den Machbarkeitstest: `docs/machbarkeitstest/` (Ablauf, Windows/WinUSB).
 - Plan und Entscheidungen: `docs/PLAN.md`.

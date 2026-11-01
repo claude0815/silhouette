@@ -30,7 +30,7 @@ export interface Markierung {
 export const markiert = signal<Markierung | null>(null);
 export const befundMarkiert = signal<PruefId | null>(null);
 
-export type Reiter = 'erklaerer' | 'checks' | 'beispiele';
+export type Reiter = 'erklaerer' | 'checks' | 'beispiele' | 'werkzeuge';
 export const reiter = signal<Reiter>('erklaerer');
 export const cutterAnsicht = signal(false);
 export const zoom = signal(1);

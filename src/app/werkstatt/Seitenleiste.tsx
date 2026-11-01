@@ -1,4 +1,4 @@
-/** Reiter der Werkstatt: Pfad-Erklärer und Cutter-Checks. */
+/** Reiter der Werkstatt: Pfad-Erklärer und Cutter-Checks (Werkzeuge in Werkzeuge.tsx). */
 import { matten, profile } from '../../cutter/profile';
 import type { MattenId } from '../../cutter/types';
 import { t } from '../../i18n/de';
