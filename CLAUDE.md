@@ -26,6 +26,7 @@ Die vollständigen Anforderungen stehen in `docs/ANFORDERUNGEN.md`. Lies sie vor
 
 - `npm run dev`: Entwicklungsserver (http://localhost:5173, Testseite unter `/cutter-test.html`)
 - `npm test`: alle Tests einmal (Vitest), `npm run test:watch` im Beobachtungsmodus
+- `npm run test:e2e`: Browsertests (Playwright, `e2e/`) gegen den gebauten Stand; baut vorher. Lokal ist Chromium vorinstalliert, `@playwright/test` ist deshalb auf 1.63.0 festgelegt.
 - `npm run typecheck`: nur Typprüfung
 - `npm run build`: Typprüfung und Build nach `dist/` (mit `base: '/silhouette/'`)
 - `npm run preview`: gebauten Stand lokal ansehen (unter http://localhost:4173/silhouette/)
@@ -44,6 +45,9 @@ Die vollständigen Anforderungen stehen in `docs/ANFORDERUNGEN.md`. Lies sie vor
 - `src/app/schneiden/`: Bereich „Schneiden“ (Verbindung, Status, Voreinstellungen, Mattenvorschau, Senden, Abbrechen). Material-Ausgangswerte in `src/cutter/voreinstellungen.ts` (Schätzwerte bis zum Machbarkeitstest).
 - `src/simulation/`: Schnittreihenfolge (`reihenfolge.ts`) und Fahrten aus GPGL-Befehlen mit Kennzahlen und Zeitplan (`fahrten.ts`). Die Simulation liest dieselben Befehle wie der Cutter.
 - `src/export/`: DXF-Export (`dxf.ts`, Format R12, mm, y gespiegelt) und Testformen.
-- Tests liegen neben dem Code als `*.test.ts`.
-- `.github/workflows/deploy.yml`: Tests und Build bei jedem Push, Deployment auf GitHub Pages nur von `main`.
+- Tests liegen neben dem Code als `*.test.ts`; Browsertests in `e2e/*.spec.ts` (laufen auch in GitHub Actions vor dem Deployment).
+- `src/offline/`: Service Worker (Dateiliste schreibt `offline-plugin.ts` beim Bauen) und Anmeldung; neue Versionen erst nach Bestätigung aktiv.
+- `src/programm/`: „SVG per Programm“ (Zeichen-API, Worker mit Zeitlimit); Vorlagen in `src/i18n/programme.de.ts`. `src/werkzeuge/bruecken.ts`: automatische Brücken.
+- `.github/workflows/deploy.yml`: Tests, Build und Browsertests bei jedem Push, Deployment auf GitHub Pages nur von `main`.
+- Unterlagen für den Machbarkeitstest: `docs/machbarkeitstest/` (Ablauf, Windows/WinUSB).
 - Plan und Entscheidungen: `docs/PLAN.md`.

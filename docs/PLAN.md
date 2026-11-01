@@ -178,3 +178,13 @@ Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon n
 - Geschwindigkeit je Stufe in `zeitannahmen()` (`src/simulation/fahrten.ts`).
 - Text zur Reaktion auf Abbruch (`abbruchTipp` in `de.ts`) an das tatsächliche Verhalten anpassen.
 - Bluetooth: Modelle ohne BLE in `docs/protokoll.md` vermerken; Einzugsrichtung der Matte bestätigen.
+
+## Weitere Vorbereitung (01.11.2026)
+
+- ✅ Unterlagen für den Testtag: `docs/machbarkeitstest/ABLAUF.md` und `WINDOWS-WINUSB.md`.
+- ✅ Automatische Brücken für Schablonen (Stufe 4), direkt beim Inseln-Check.
+- ✅ SVG per Programm (Stufe 4): Programm-Modus in der Werkstatt.
+- ✅ Offline-Fähigkeit (PWA) mit eigenem Service Worker, Update erst nach Bestätigung.
+- ✅ Browsertests im Repository (`e2e/`, 17 Tests) und in GitHub Actions vor dem Deployment.
+
+Offen aus Stufe 4: Farbebenen, Text in Pfade, Konturen versetzen (Offset). Außerdem Potrace als Option „Beste Qualität“.
