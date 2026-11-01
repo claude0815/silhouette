@@ -187,4 +187,6 @@ Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon n
 - ✅ Offline-Fähigkeit (PWA) mit eigenem Service Worker, Update erst nach Bestätigung.
 - ✅ Browsertests im Repository (`e2e/`, 17 Tests) und in GitHub Actions vor dem Deployment.
 
-Offen aus Stufe 4: Farbebenen, Text in Pfade, Konturen versetzen (Offset). Außerdem Potrace als Option „Beste Qualität“.
+- ✅ Konturen versetzen (Offset, Stufe 4): Werkstatt-Reiter „Werkzeuge“. Verfahren über eine Abstandskarte (`src/werkzeuge/versatz.ts`): rastern (0,1 mm, bei großen Formen gröber, höchstens 2 Mio. Zellen), exakte euklidische Distanztransformation (Felzenszwalb/Huttenlocher), Schwelle, Marching Squares, Douglas-Peucker. Runde Ecken, Verschmelzen und verschwindende Löcher ergeben sich von selbst; die Abstandskarte wird angezeigt. Entscheidung gegen Linien-Offset (Clipper o. Ä.): weniger Sonderfälle, nutzt die vorhandenen Lern-Algorithmen, Genauigkeit 0,1 mm reicht zum Schneiden.
+
+Offen aus Stufe 4: Farbebenen, Text in Pfade. Außerdem Potrace als Option „Beste Qualität“.

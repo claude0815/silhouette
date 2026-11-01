@@ -70,4 +70,20 @@ test.describe('SVG-Werkstatt', () => {
     await expect(page.getByTestId('befund-inseln')).toHaveClass(/ok/);
     await expect(page.getByTestId('bruecken-ergebnis')).toContainText('1 Insel');
   });
+  test('Konturen versetzen fügt eine rote Kontur ein und zeigt die Abstandskarte', async ({ page }) => {
+    const fehler = sammleFehler(page);
+    await page.goto('./');
+    await oeffneWerkstatt(page);
+    await tippeInEditor(page, '<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="60mm" viewBox="0 0 60 60"><rect x="20" y="20" width="20" height="20"/></svg>');
+    await expect.poll(() => editorText(page)).toContain('height="20"/></svg>');
+    await page.getByRole('button', { name: 'Werkzeuge', exact: true }).click();
+    await page.getByTestId('versatz-abstand').fill('5');
+    await page.getByTestId('versatz-abstand').blur();
+    await page.getByTestId('versatz-los').click();
+    await expect(page.getByTestId('versatz-ergebnis')).toContainText('1 Kontur eingefügt');
+    await expect(page.getByTestId('abstandskarte')).toBeVisible();
+    await expect.poll(() => editorText(page)).toContain('5 mm nach außen versetzt');
+    await expect.poll(() => editorText(page)).toContain('<rect');
+    expect(fehler).toEqual([]);
+  });
 });

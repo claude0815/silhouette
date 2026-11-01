@@ -315,7 +315,7 @@ export const de = {
       fehler: (n: number) => (n === 1 ? '1 Fehler' : `${n} Fehler`),
       hinweise: (n: number) => (n === 1 ? '1 Hinweis' : `${n} Hinweise`),
       zurStelle: 'Zur Stelle im Code springen',
-      reiter: { erklaerer: 'Pfad-Erklärer', checks: 'Cutter-Checks', beispiele: 'Beispiele' } as Record<string, string>,
+      reiter: { erklaerer: 'Pfad-Erklärer', checks: 'Cutter-Checks', beispiele: 'Beispiele', werkzeuge: 'Werkzeuge' } as Record<string, string>,
       keineAuswahl: 'In der Vorschau eine Form anklicken oder den Cursor im Code in ein Element setzen.',
       element: (name: string, n: number) => `<${name}> · Element ${n}`,
       umgerechnetAus: (name: string) =>
@@ -337,6 +337,32 @@ export const de = {
         setzen: 'Brücken setzen',
         ergebnis: (n: number) => `${n} ${n === 1 ? 'Insel wird' : 'Inseln werden'} jetzt festgehalten. Rückgängig mit Strg+Z im Code.`,
         hinweis: 'Die betroffenen Formen werden durch einen neuen Pfad ersetzt (Kurven als feine Strecken). Andere Elemente bleiben unverändert.',
+      },
+      versatz: {
+        titel: 'Konturen versetzen',
+        einleitung:
+          'Schiebt die Umrisse um einen festen Abstand nach außen (z. B. weißer Rand für Aufkleber) oder nach innen (negativer Wert). Nur geschlossene Formen werden versetzt.',
+        abstand: 'Abstand (mm, negativ = nach innen)',
+        nurAuswahl: (name: string) => `nur die ausgewählte Form (<${name}>)`,
+        nurAuswahlKeine: 'nur die ausgewählte Form (zuerst eine Form anklicken)',
+        ersetzen: 'Original ersetzen (sonst bleibt es erhalten, die neue Kontur ist rot)',
+        nachAussen: 'Nach außen versetzen',
+        nachInnen: 'Nach innen versetzen',
+        keineFormen: 'Keine geschlossene Form gefunden. Offene Linien haben kein Innen und Außen und lassen sich nicht versetzen.',
+        nichtsUebrig: 'Nach innen bleibt nichts übrig: Die Form ist dünner als der doppelte Abstand.',
+        ergebnis: (n: number, zelle: number) =>
+          `${n} ${n === 1 ? 'Kontur' : 'Konturen'} eingefügt (Raster ${String(Math.round(zelle * 100) / 100).replace('.', ',')} mm). Rückgängig mit Strg+Z im Code.`,
+        karteAussen: 'Abstandskarte: Blau ist die Form, je heller ein Punkt, desto weiter ist er von ihr entfernt. Rot getönt: alles, was näher als der Abstand liegt – das ist die neue Form.',
+        karteInnen: 'Abstandskarte: Je heller das Blau, desto weiter liegt ein Punkt vom Rand entfernt. Rot: der Streifen, der wegfällt.',
+        wieTitel: 'Wie funktioniert das?',
+        wieSchritte: [
+          'Rastern: Die Formen werden in ein feines Gitter (0,1 mm) übertragen. Ob eine Zelle innen liegt, entscheidet die Gerade-Ungerade-Regel.',
+          'Abstandskarte: Für jede Zelle wird der Abstand zur nächsten Zelle der Form berechnet (Distanztransformation nach Felzenszwalb und Huttenlocher, erst spaltenweise, dann zeilenweise).',
+          'Schwelle: Alle Zellen, die näher als der gewünschte Abstand liegen, gehören zur neuen Form – wie beim Schwellwert für Pixelbilder.',
+          'Zurück zu Linien: Marching Squares findet die Umrisse, Douglas-Peucker vereinfacht sie.',
+        ],
+        wieFolgen:
+          'Darum werden Ecken außen von selbst rund, nahe Formen verschmelzen und kleine Löcher verschwinden. Die Genauigkeit hängt von der Rastergröße ab; bei sehr großen Formen wird das Raster gröber, damit die Rechnung schnell bleibt.',
       },
       checkStufe: { ok: 'in Ordnung', info: 'Hinweis', warnung: 'Warnung' } as Record<string, string>,
       checks: {
