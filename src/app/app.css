@@ -1142,3 +1142,9 @@
   max-height: 120px;
   overflow: auto;
 }
+.update-hinweis {
+  margin: 0;
+  padding: 0.4rem 1rem;
+  background: #fef3c7;
+  border-bottom: 1px solid #f59e0b;
+}
