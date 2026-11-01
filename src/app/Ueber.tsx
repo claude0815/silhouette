@@ -23,6 +23,7 @@ import creltPaket from '../../node_modules/crelt/package.json';
 import clusterLizenz from '../../node_modules/@marijn/find-cluster-break/LICENSE?raw';
 import clusterPaket from '../../node_modules/@marijn/find-cluster-break/package.json';
 import { t } from '../i18n/de';
+import { offlineBereit } from '../offline/registrieren';
 
 const tx = t.ueber;
 const QUELLCODE = 'https://github.com/claude0815/silhouette';
@@ -38,7 +39,7 @@ const bibliotheken = [
     url: 'https://github.com/codemirror/dev',
     text: codemirrorLizenz,
   },
-  { name: 'Lezer (@lezer/common, highlight, lr, xml)', paket: lezerPaket, url: 'https://github.com/lezer-parser', text: lezerLizenz },
+  { name: 'Lezer (@lezer/common, highlight, lr, xml, javascript)', paket: lezerPaket, url: 'https://github.com/lezer-parser', text: lezerLizenz },
   { name: 'style-mod', paket: styleModPaket, url: 'https://github.com/marijnh/style-mod', text: styleModLizenz },
   { name: 'w3c-keyname', paket: keynamePaket, url: 'https://github.com/marijnh/w3c-keyname', text: keynameLizenz },
   { name: 'crelt', paket: creltPaket, url: 'https://github.com/marijnh/crelt', text: creltLizenz },
@@ -55,6 +56,7 @@ export function Ueber(props: { zurueck: () => void }) {
       {tx.absaetze.map((a) => (
         <p>{a}</p>
       ))}
+      <p class="klein" data-testid="offline-status">{offlineBereit.value ? tx.offlineBereit : tx.offlineNicht}</p>
 
       <h3>{tx.lizenzTitel}</h3>
       <p>{tx.lizenzText}</p>

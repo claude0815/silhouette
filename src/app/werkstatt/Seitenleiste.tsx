@@ -7,6 +7,10 @@ import { befehlsGeometrie } from '../../svg/pfad';
 import { istEinheit } from '../../svg/transform';
 import { dokument } from '../dokument';
 import { befehlErklaerung } from '../svgansicht';
+import { signal } from '@preact/signals';
+import { useState } from 'preact/hooks';
+import { setzeBruecken } from '../../werkzeuge/bruecken';
+import { aendereText } from '../dokument';
 import { auswahl, befunde, befundMarkiert, dok, markiert, pruefMatte, pruefProfil, springeZu } from './zustand';
 
 const tx = t.app.werkstatt;
@@ -98,11 +102,66 @@ export function Checks() {
                   <summary>{t.app.wieFunktioniert}</summary>
                   <p>{text.erklaerung}</p>
                 </details>
+                {b.id === 'inseln' &&
+                  (b.anzahl > 0 ? (
+                    <Brueckenformular />
+                  ) : (
+                    brueckenMeldung.value && <p class="geschafft" data-testid="bruecken-ergebnis">{brueckenMeldung.value}</p>
+                  ))}
               </div>
             </li>
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+/** Meldung nach dem Setzen; bleibt stehen, auch wenn der Inseln-Befund danach verschwindet */
+const brueckenMeldung = signal<string | null>(null);
+
+/** Brücken setzen: hält die Inseln einer Schablone fest. */
+function Brueckenformular() {
+  const tb = tx.bruecken;
+  const [breite, setBreite] = useState(2);
+  const [richtung, setRichtung] = useState<'senkrecht' | 'waagerecht'>('senkrecht');
+  return (
+    <div class="bruecken" data-testid="bruecken">
+      <div class="zahlenfelder">
+        <label class="zahlenfeld">
+          {tb.breite}
+          <input
+            type="number"
+            min={0.5}
+            max={20}
+            step={0.5}
+            value={breite}
+            onChange={(e) => {
+              const n = e.currentTarget.valueAsNumber;
+              if (Number.isFinite(n) && n > 0) setBreite(n);
+            }}
+          />
+        </label>
+        <label class="zahlenfeld">
+          {tb.richtung}
+          <select value={richtung} onChange={(e) => setRichtung(e.currentTarget.value as 'senkrecht' | 'waagerecht')}>
+            <option value="senkrecht">{tb.senkrecht}</option>
+            <option value="waagerecht">{tb.waagerecht}</option>
+          </select>
+        </label>
+      </div>
+      <button
+        onClick={() => {
+          const r = setzeBruecken(dokument.value.text, dok.value, { breiteMm: breite, richtung });
+          if (r) {
+            brueckenMeldung.value = tb.ergebnis(r.inseln);
+            aendereText(r.text);
+          }
+        }}
+      >
+        {tb.setzen}
+      </button>
+      <p class="klein">{tb.hinweis}</p>
     </div>
   );
 }

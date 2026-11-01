@@ -7,6 +7,7 @@ import type { ComponentType } from 'preact';
 import { Schritt5, Schritt6, Schritt7, Schritt8 } from './schritte/VektorSchritte';
 import { signal } from '@preact/signals';
 import { Ueber } from './Ueber';
+import { aktualisiere, neueVersion } from '../offline/registrieren';
 import { bereich, ergebnis, fehler, geladen, rechnet, schritt } from './zustand';
 
 /** Zeigt statt der Schritte die Seite „Über und Lizenzen“ */
@@ -102,6 +103,11 @@ export function App() {
           <Kopfzeilenstatus />
         </div>
       </header>
+      {neueVersion.value && (
+        <p class="update-hinweis" role="status" data-testid="update-hinweis">
+          {tx.neueVersion} <button onClick={aktualisiere}>{tx.neuLaden}</button>
+        </p>
+      )}
       {fehler.value && (
         <p class="fehlermeldung" role="alert">
           {tx.fehler}: {fehler.value}

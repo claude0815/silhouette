@@ -1,6 +1,6 @@
 # Baut die App und veröffentlicht sie auf GitHub Pages.
-# Tests und Typprüfung laufen bei jedem Push und Pull Request,
-# veröffentlicht wird nur der Stand auf main.
+# Tests, Typprüfung und Browsertests laufen bei jedem Push und Pull Request,
+# veröffentlicht wird nur der Stand auf main – und nur, wenn alles grün ist.
 name: Build und Deployment
 
 on:
@@ -30,6 +30,17 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # Browsertests gegen den gebauten Stand (Playwright startet „vite preview“)
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-bericht
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with:

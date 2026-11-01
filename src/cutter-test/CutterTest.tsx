@@ -7,6 +7,9 @@ export function CutterTest() {
     <main class="cutter-test">
       <h1>{t.cutterTest.titel}</h1>
       <p>{t.cutterTest.beschreibung}</p>
+      <p>
+        <a href="https://github.com/claude0815/silhouette/blob/main/docs/machbarkeitstest/ABLAUF.md">{t.cutterTest.ablauf}</a>
+      </p>
       <Umgebung />
       <Verbindung />
       <Testauftrag />

@@ -23,6 +23,8 @@ export const de = {
     lizenz: 'Lizenz: GPL-2.0-or-later',
     cutterTest: 'Machbarkeitstest Cutter',
     ueber: 'Über und Lizenzen',
+    neueVersion: 'Eine neue Version der App ist bereit.',
+    neuLaden: 'Jetzt neu laden',
     rechnet: 'rechnet …',
     rechenzeit: (ms: number) => `${ms.toFixed(0)} ms`,
     fehler: 'Fehler',
@@ -326,6 +328,16 @@ export const de = {
       fuellung: (f: string | null, k: string | null) =>
         `Füllung: ${f ?? 'keine'} · Kontur: ${k ?? 'keine'}`,
       matte: 'Prüfen für',
+      bruecken: {
+        titel: 'Brücken setzen',
+        breite: 'Breite (mm)',
+        richtung: 'Richtung',
+        senkrecht: 'senkrecht (oben und unten)',
+        waagerecht: 'waagerecht (links und rechts)',
+        setzen: 'Brücken setzen',
+        ergebnis: (n: number) => `${n} ${n === 1 ? 'Insel wird' : 'Inseln werden'} jetzt festgehalten. Rückgängig mit Strg+Z im Code.`,
+        hinweis: 'Die betroffenen Formen werden durch einen neuen Pfad ersetzt (Kurven als feine Strecken). Andere Elemente bleiben unverändert.',
+      },
       checkStufe: { ok: 'in Ordnung', info: 'Hinweis', warnung: 'Warnung' } as Record<string, string>,
       checks: {
         leer: {
@@ -438,7 +450,10 @@ export const de = {
     absaetze: [
       '„Vom Pixel zum Schnitt“ zeigt Schritt für Schritt, wie aus einem Pixelbild Schnittpfade für einen Schneideplotter werden. Jeder Schritt ist sichtbar und einstellbar, der Quellcode ist selbst als Lernmaterial gedacht.',
       'Die App läuft vollständig im Browser. Bilder und Daten verlassen das Gerät nicht; es gibt kein Tracking und keine Anmeldung.',
+      'Nach dem ersten Besuch funktioniert die App auch ohne Internet: Alle Dateien liegen dann im Zwischenspeicher des Browsers. In Chrome und Edge lässt sie sich zusätzlich wie ein Programm installieren.',
     ],
+    offlineBereit: 'Offline-Betrieb: bereit.',
+    offlineNicht: 'Offline-Betrieb: noch nicht bereit (erst im gebauten Stand bzw. nach dem ersten vollständigen Laden).',
     lizenzTitel: 'Lizenz dieser App',
     lizenzText:
       'Die App steht unter der GNU General Public License, Version 2 oder (nach Wahl) jeder späteren Version (GPL-2.0-or-later). Alle dürfen sie nutzen, verändern und weitergeben, auch kommerziell. Weiterentwicklungen müssen wieder unter der GPL offen sein.',
@@ -461,6 +476,7 @@ export const de = {
     beschreibung:
       'Diese Seite prüft, ob sich ein Silhouette-Cutter direkt aus dem Browser ansteuern lässt (WebUSB und Web Bluetooth).',
     zurApp: 'Zur App',
+    ablauf: 'Ablauf und Materialliste für den Testtag',
 
     umgebung: 'Umgebung',
     sichererKontext: 'Sicherer Kontext (HTTPS oder localhost)',
