@@ -1,5 +1,6 @@
 /** Zustand der SVG-Werkstatt. Das Dokument wird einmal gelesen; alle Teile nutzen das Ergebnis. */
-import { computed, signal } from '@preact/signals';
+import { computed, effect, signal } from '@preact/signals';
+import { programme } from '../../i18n/programme.de';
 import { pruefe, type PruefId } from '../../checks/cutter-checks';
 import { profile, schneidebereichMm } from '../../cutter/profile';
 import type { MattenId } from '../../cutter/types';
@@ -54,3 +55,27 @@ export function anStelle(d: SvgDokument, pos: number): { pfad: number; befehl: n
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// SVG per Programm
+
+export type Modus = 'svg' | 'programm';
+export const modus = signal<Modus>('svg');
+
+const PROGRAMM_SPEICHER = 'vom-pixel-zum-schnitt:programm';
+export const programmText = signal<string>(
+  (() => {
+    try {
+      return globalThis.localStorage?.getItem(PROGRAMM_SPEICHER) ?? programme[0]!.code;
+    } catch {
+      return programme[0]!.code;
+    }
+  })(),
+);
+effect(() => {
+  try {
+    globalThis.localStorage?.setItem(PROGRAMM_SPEICHER, programmText.value);
+  } catch {
+    // nicht speicherbar: nur für diese Sitzung
+  }
+});

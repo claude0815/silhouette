@@ -38,7 +38,7 @@ const bibliotheken = [
     url: 'https://github.com/codemirror/dev',
     text: codemirrorLizenz,
   },
-  { name: 'Lezer (@lezer/common, highlight, lr, xml)', paket: lezerPaket, url: 'https://github.com/lezer-parser', text: lezerLizenz },
+  { name: 'Lezer (@lezer/common, highlight, lr, xml, javascript)', paket: lezerPaket, url: 'https://github.com/lezer-parser', text: lezerLizenz },
   { name: 'style-mod', paket: styleModPaket, url: 'https://github.com/marijnh/style-mod', text: styleModLizenz },
   { name: 'w3c-keyname', paket: keynamePaket, url: 'https://github.com/marijnh/w3c-keyname', text: keynameLizenz },
   { name: 'crelt', paket: creltPaket, url: 'https://github.com/marijnh/crelt', text: creltLizenz },

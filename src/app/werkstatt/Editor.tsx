@@ -2,6 +2,7 @@
  * Code-Editor (CodeMirror 6) für das SVG-Dokument.
  * Fehler werden an ihrer Stelle unterstrichen, der in der Grafik gezeigte Befehl wird markiert.
  */
+import { javascript } from '@codemirror/lang-javascript';
 import { xml } from '@codemirror/lang-xml';
 import { StateEffect, StateField, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, type DecorationSet } from '@codemirror/view';
@@ -46,6 +47,8 @@ const markenFeld = StateField.define<DecorationSet>({
 
 export interface EditorProps {
   text: string;
+  /** Sprache für die Syntaxfarben; beim Wechsel den Editor mit neuem key anlegen */
+  sprache?: 'xml' | 'javascript';
   onChange: (text: string) => void;
   marken: Marke[];
   /** Diese Stelle in den sichtbaren Bereich holen und auswählen */
@@ -73,7 +76,7 @@ export function Editor(props: EditorProps) {
   useEffect(() => {
     const erweiterungen: Extension[] = [
       basicSetup,
-      xml(),
+      props.sprache === 'javascript' ? javascript() : xml(),
       EditorView.lineWrapping,
       markenFeld,
       EditorView.updateListener.of((u) => {
