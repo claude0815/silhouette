@@ -27,6 +27,11 @@ export interface Werkzeug {
   halter: 1 | 2;
   /** Durchmesser, um den die Klinge nachläuft; üblich sind 0,9 mm. Nur beim Messer. */
   klingenVersatzMm?: number;
+  /**
+   * Klingentiefe der AutoBlade (1 bis 10), nur in Halter 1. Ohne Angabe wird keine Tiefe gesendet
+   * (z. B. bei der Ratchet-Klinge, deren Tiefe man von Hand einstellt).
+   */
+  tiefe?: number;
 }
 
 /** Schlüssel der bekannten Schneidematten, siehe `matten` in profile.ts. */
