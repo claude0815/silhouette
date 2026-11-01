@@ -1109,3 +1109,11 @@
   overflow: auto;
   padding: 0.5rem;
 }
+.bruecken {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed #cbd5e1;
+}
+.bruecken button {
+  margin-top: 0.3rem;
+}

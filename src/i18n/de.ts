@@ -326,6 +326,16 @@ export const de = {
       fuellung: (f: string | null, k: string | null) =>
         `Füllung: ${f ?? 'keine'} · Kontur: ${k ?? 'keine'}`,
       matte: 'Prüfen für',
+      bruecken: {
+        titel: 'Brücken setzen',
+        breite: 'Breite (mm)',
+        richtung: 'Richtung',
+        senkrecht: 'senkrecht (oben und unten)',
+        waagerecht: 'waagerecht (links und rechts)',
+        setzen: 'Brücken setzen',
+        ergebnis: (n: number) => `${n} ${n === 1 ? 'Insel wird' : 'Inseln werden'} jetzt festgehalten. Rückgängig mit Strg+Z im Code.`,
+        hinweis: 'Die betroffenen Formen werden durch einen neuen Pfad ersetzt (Kurven als feine Strecken). Andere Elemente bleiben unverändert.',
+      },
       checkStufe: { ok: 'in Ordnung', info: 'Hinweis', warnung: 'Warnung' } as Record<string, string>,
       checks: {
         leer: {
@@ -461,6 +471,7 @@ export const de = {
     beschreibung:
       'Diese Seite prüft, ob sich ein Silhouette-Cutter direkt aus dem Browser ansteuern lässt (WebUSB und Web Bluetooth).',
     zurApp: 'Zur App',
+    ablauf: 'Ablauf und Materialliste für den Testtag',
 
     umgebung: 'Umgebung',
     sichererKontext: 'Sicherer Kontext (HTTPS oder localhost)',
