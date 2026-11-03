@@ -9,6 +9,8 @@ import { useMemo, useState } from 'preact/hooks';
 import { t } from '../i18n/de';
 import { leseSvg } from '../svg/dokument';
 import { einpassen, motivRahmen, setzeGroesseUndLage } from '../svg/groesse';
+import { istGespiegelt, schalteSpiegelung } from '../svg/spiegeln';
+import { Schalter } from './schritte/Bausteine';
 import { aendereText, dokument, nachgezeichnet } from './dokument';
 import { einstellungen, setze } from './zustand';
 
@@ -46,9 +48,21 @@ function wende(ziel: { x: number; y: number; breite: number }): string | null {
   return null;
 }
 
+/** Spiegeln ein- oder ausschalten; beim Nachzeichnen über den Schalter in Schritt 8 */
+export function schalteSpiegeln(): void {
+  if (ausNachzeichnen()) {
+    setze('spiegeln', !einstellungen.value.spiegeln);
+    return;
+  }
+  const text = dokument.value.text;
+  const neu = schalteSpiegelung(text, leseSvg(text));
+  if (neu) aendereText(neu);
+}
+
 export function GroesseUndLage(props: { bereich?: { breite: number; hoehe: number } }) {
   const text = dokument.value.text;
-  const r = useMemo(() => motivRahmen(leseSvg(text)), [text]);
+  const d = useMemo(() => leseSvg(text), [text]);
+  const r = useMemo(() => motivRahmen(d), [d]);
   const [hinweis, setHinweis] = useState<string | null>(null);
   if (!r) return <p class="klein">{tg.keinMotiv}</p>;
   const verhaeltnis = r.breite > 0 ? r.hoehe / r.breite : 1;
@@ -93,8 +107,12 @@ export function GroesseUndLage(props: { bereich?: { breite: number; hoehe: numbe
           </button>
         )}
       </div>
+      <div data-testid="spiegeln">
+        <Schalter label={tg.spiegeln} wert={istGespiegelt(d)} onChange={schalteSpiegeln} />
+      </div>
       {hinweis && <p class="hinweis">{hinweis}</p>}
       <p class="klein">{ausNachzeichnen() ? tg.erklaerungNachzeichnen : tg.erklaerungEigen}</p>
+      <p class="klein">{tg.spiegelnErklaerung}</p>
     </div>
   );
 }

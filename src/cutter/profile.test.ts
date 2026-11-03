@@ -18,6 +18,13 @@ describe('Geräteprofile', () => {
     expect(profilFuerName('Silhouette V1.10')).toBeUndefined();
   });
 
+  it('kennt die Cameo 2 (im Test bestätigt) mit Geschwindigkeit bis 10', () => {
+    const p = profilFuerUsb(0x0b4d, 0x112b)!;
+    expect(p.name).toBe('Cameo 2');
+    expect(p.breiteMm).toBe(304);
+    expect(p.maxGeschwindigkeit).toBe(10);
+  });
+
   it('hat eindeutige IDs', () => {
     const ids = profile.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);

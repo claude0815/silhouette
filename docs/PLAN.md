@@ -191,4 +191,7 @@ Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon n
 
 - ✅ Größe und Lage beim Schneiden (03.11.2026): Kasten „Größe und Lage“ im Bereich Schneiden und im Werkstatt-Reiter „Werkzeuge“ (Breite/Höhe gekoppelt, Abstand links/oben, halb/doppelt, größtmöglich auf die Matte). Folgt das Dokument dem Nachzeichnen, werden die Regler von Schritt 8 verstellt, damit es weiter folgt; sonst ändert `src/svg/groesse.ts` nur width, height und viewBox der Wurzel – die Pfade bleiben unverändert (Grundsatz: alles liest aus dem SVG-Dokument).
 
+- ✅ Erster Gerätetest (03.11.2026): **Cameo 2 per WebUSB einwandfrei.** Eigenes Profil (`0x112B`, 304 mm, ein Halter, Geschwindigkeit bis 10); vorher lief sie als „Unbekanntes Gerät“ mit 203 mm Breite. Cameo 4/5 und Portrait 3/4 sind weiter ungetestet.
+- ✅ Spiegeln für Flexfolie: Schalter in Schritt 8, im Bereich Schneiden und in der Werkstatt. Umgesetzt als Gruppe `<g class="gespiegelt" transform="matrix(-1 0 0 1 c 0)">` um den Inhalt (`src/svg/spiegeln.ts`), die Pfade bleiben unverändert. Neue Voreinstellung „Flexfolie“ (Schätzwert wie Vinyl) warnt, wenn das Motiv nicht gespiegelt ist.
+
 Offen aus Stufe 4: Farbebenen, Text in Pfade. Außerdem Potrace als Option „Beste Qualität“.

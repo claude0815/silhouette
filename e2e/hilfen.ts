@@ -21,7 +21,7 @@ export function aufLinie(page: Page, testid: string, anteil: number): Promise<{ 
 
 /** Öffnet die Werkstatt und wartet auf den Editor. */
 export async function oeffneWerkstatt(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'SVG-Werkstatt' }).click();
+  await page.getByRole('button', { name: 'SVG-Werkstatt', exact: true }).click();
   await expect(page.getByTestId('editor').locator('.cm-content')).toBeVisible();
 }
 

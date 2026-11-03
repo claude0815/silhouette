@@ -124,3 +124,14 @@ describe('SVG erzeugen', () => {
     expect(svg.text.match(/M /g)).toHaveLength(2);
   });
 });
+
+describe('erzeugeSvg gespiegelt', () => {
+  it('legt eine Spiegelgruppe um die Pfade, die Koordinaten bleiben gleich', () => {
+    const formen = [{ aussen: [P(0, 0), P(2, 0), P(0, 1)], loecher: [] }];
+    const o = { bildBreitePx: 4, bildHoehePx: 2, breiteMm: 40, position: P(10, 5) };
+    const normal = erzeugeSvg(formen, o).text;
+    const gespiegelt = erzeugeSvg(formen, { ...o, spiegeln: true }).text;
+    expect(gespiegelt).toContain('<g class="gespiegelt" transform="matrix(-1 0 0 1 60 0)">');
+    expect(gespiegelt).toContain(normal.split('\n')[1]!);
+  });
+});

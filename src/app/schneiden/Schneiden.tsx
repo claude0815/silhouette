@@ -16,7 +16,8 @@ import { pruefeUmgebung } from '../../cutter-test/umgebung';
 import { dokument } from '../dokument';
 import { Erklaerung, Kasten, Regler, Schalter } from '../schritte/Bausteine';
 import { bereich } from '../zustand';
-import { GroesseUndLage } from '../GroesseUndLage';
+import { GroesseUndLage, schalteSpiegeln } from '../GroesseUndLage';
+import { istGespiegelt } from '../../svg/spiegeln';
 import * as v from './verbindung';
 
 const tx = t.app.schneiden;
@@ -125,6 +126,7 @@ export function Schneiden() {
   const [kopiert, setKopiert] = useState(false);
 
   const kz = useMemo(() => ('befehle' in b ? kennzahlen(befehleZuFahrten(b.befehle), zeitannahmen(w.geschwindigkeit)) : null), [b, w.geschwindigkeit]);
+  const gespiegelt = useMemo(() => istGespiegelt(leseSvg(dokument.value.text)), [dokument.value.text]);
   const warnungen = useMemo(() => {
     const dok = leseSvg(dokument.value.text);
     return pruefe(dok, { bereich: schneidebereichMm(p, v.matte.value) }).filter((x) => x.stufe === 'warnung').length;
@@ -191,6 +193,14 @@ export function Schneiden() {
             </p>
           )}
           {voreinstellung?.hinweis && <p class="klein">{voreinstellung.hinweis}</p>}
+          {voreinstellung?.spiegeln && !gespiegelt && (
+            <p class="hinweis warnung" data-testid="spiegeln-fehlt">
+              {t.app.groesse.spiegelnFehlt}{' '}
+              <button class="verweis" onClick={schalteSpiegeln}>
+                {t.app.groesse.jetztSpiegeln}
+              </button>
+            </p>
+          )}
           <label class="regler">
             <span>{tx.werkzeug}</span>
             <select value={w.art} onChange={(e) => v.aendereWerkzeug({ art: e.currentTarget.value as 'stift' | 'messer' })} data-testid="werkzeug">
@@ -204,7 +214,7 @@ export function Schneiden() {
             label={tx.geschwindigkeit}
             wert={w.geschwindigkeit}
             min={GRENZEN.geschwindigkeit.min}
-            max={GRENZEN.geschwindigkeit.max}
+            max={Math.min(GRENZEN.geschwindigkeit.max, p.maxGeschwindigkeit)}
             onChange={(n) => v.aendereWerkzeug({ geschwindigkeit: n })}
           />
           {w.art === 'messer' && (

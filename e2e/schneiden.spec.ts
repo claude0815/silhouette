@@ -76,4 +76,32 @@ test.describe('Schneiden (mit simuliertem Gerät)', () => {
     await expect.poll(() => editorText(page)).toContain('<rect x="10" y="10" width="20" height="10"/>');
     expect(fehler).toEqual([]);
   });
+
+  test('Flexfolie: Hinweis auf fehlende Spiegelung, Spiegeln beim Nachzeichnen und in eigener Datei', async ({ page }) => {
+    const fehler = sammleFehler(page);
+    await page.goto('./');
+    await page.getByRole('button', { name: 'Beispielbild verwenden' }).click();
+    await fertig(page);
+    await page.getByRole('button', { name: 'Schneiden', exact: true }).click();
+    await page.getByTestId('voreinstellung').selectOption('flexfolie');
+    await expect(page.getByTestId('spiegeln-fehlt')).toBeVisible();
+    await page.getByRole('button', { name: 'Jetzt spiegeln' }).click();
+    await fertig(page);
+    await expect(page.getByTestId('spiegeln-fehlt')).toHaveCount(0);
+    await expect(page.getByTestId('spiegeln').getByRole('checkbox')).toBeChecked();
+    // Schritt 8 zeigt den Schalter ebenfalls an
+    await page.getByRole('button', { name: 'Nachzeichnen', exact: true }).click();
+    await page.locator('.schritt-knopf').nth(7).click();
+    await expect(page.getByRole('checkbox', { name: /Spiegeln/ })).toBeChecked();
+
+    await oeffneWerkstatt(page);
+    await tippeInEditor(page, '<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="40mm" viewBox="0 0 60 40"><rect x="10" y="10" width="20" height="10"/></svg>');
+    await expect.poll(() => editorText(page)).toContain('height="10"/></svg>');
+    await page.getByRole('button', { name: 'Werkzeuge', exact: true }).click();
+    await page.getByTestId('spiegeln').getByRole('checkbox').check();
+    await expect.poll(() => editorText(page)).toContain('<g class="gespiegelt" transform="matrix(-1 0 0 1 40 0)">');
+    await page.getByTestId('spiegeln').getByRole('checkbox').uncheck();
+    await expect.poll(() => editorText(page)).not.toContain('gespiegelt');
+    expect(fehler).toEqual([]);
+  });
 });

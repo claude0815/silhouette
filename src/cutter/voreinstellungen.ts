@@ -18,6 +18,8 @@ export interface Voreinstellung {
   /** Am Gerät der Schule geprüft? */
   geprueft: boolean;
   hinweis?: string;
+  /** Muss das Motiv gespiegelt geschnitten werden (Flexfolie)? */
+  spiegeln?: boolean;
 }
 
 const MEDIENTABELLE = 'inkscape-silhouette, Graphtec.py, MEDIA';
@@ -60,6 +62,16 @@ export const VOREINSTELLUNGEN: readonly Voreinstellung[] = [
     quelle: `${MEDIENTABELLE} 102 „Vinyl Sticker“`,
     geprueft: false,
     hinweis: 'Nur die Folie schneiden, nicht das Trägerpapier: lieber mit wenig Druck beginnen.',
+  },
+  {
+    id: 'flexfolie',
+    name: 'Flexfolie (Bügelfolie für Textilien)',
+    werkzeug: { art: 'messer', druck: 10, geschwindigkeit: 5, klingenVersatzMm: 0.9 },
+    quelle: `Annahme: wie ${MEDIENTABELLE} 102 „Vinyl Sticker“ (keine eigene Zeile in der Tabelle)`,
+    geprueft: false,
+    spiegeln: true,
+    hinweis:
+      'Gespiegelt schneiden: Die glänzende Trägerfolie liegt unten auf der Matte, geschnitten wird von der Rückseite. Nach dem Entgittern wird das Motiv umgedreht aufgebügelt.',
   },
   {
     id: 'aufkleber',

@@ -15,6 +15,7 @@ import { t } from '../../i18n/de';
 import { Bildansicht } from '../Bildansicht';
 import { ausBinaerbild } from '../raster';
 import { auswahlForm, bereich, einstellungen, ergebnis, geladen, setze } from '../zustand';
+import type { Matrix } from '../../svg/transform';
 import { Erklaerung, Kasten, Regler, Schalter, Schrittansicht, vieleckD } from './Bausteine';
 
 const tx = t.app;
@@ -403,6 +404,7 @@ export function Schritt8() {
   const markierteGeometrie = m && m.befehl !== null ? geometrien[m.pfad]?.get(m.befehl) : undefined;
   const markierterBefehl = m && m.befehl !== null ? dok.pfade[m.pfad]?.befehle[m.befehl] : undefined;
 
+  const matrixText = (q: Matrix) => `matrix(${q.a} ${q.b} ${q.c} ${q.d} ${q.e} ${q.f})`;
   const vorschau = (
     <div class="svg-vorschau" data-testid="svg-vorschau">
       <svg viewBox={`0 0 ${dok.breiteMm} ${dok.hoeheMm}`}>
@@ -418,13 +420,13 @@ export function Schritt8() {
           return (
             <path
               d={d}
+              transform={matrixText(p.matrix)}
               fill-rule="evenodd"
               class={`svg-form ${m?.pfad === i ? 'markiert' : ''}`}
               data-testid={`form-${i}`}
               onMouseMove={(ev) => {
-                // Mausposition in SVG-Koordinaten (mm) umrechnen
-                const svg = (ev.currentTarget as SVGPathElement).ownerSVGElement!;
-                const ctm = svg.getScreenCTM();
+                // Mausposition in die Koordinaten des Pfads umrechnen (samt transform, z. B. beim Spiegeln)
+                const ctm = (ev.currentTarget as SVGPathElement).getScreenCTM();
                 if (!ctm) return;
                 const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse());
                 const befehl = naechsterBefehl(geometrien[i]!, { x: pt.x, y: pt.y }, 0.2);
@@ -434,7 +436,11 @@ export function Schritt8() {
             />
           );
         })}
-        {markierteGeometrie && <Befehlsmarkierung g={markierteGeometrie} />}
+        {markierteGeometrie && m && (
+          <g transform={matrixText(dok.pfade[m.pfad]!.matrix)}>
+            <Befehlsmarkierung g={markierteGeometrie} />
+          </g>
+        )}
       </svg>
       <p class="befehl-info" data-testid="befehl-info">
         {markierterBefehl
@@ -493,6 +499,7 @@ export function Schritt8() {
             {r?.svg && <p>{tx.svg.hoehe(r.svg.hoeheMm - e.positionYMm)}</p>}
             <Regler label={tx.svg.positionX} wert={e.positionXMm} min={0} max={300} onChange={(n) => setze('positionXMm', n)} />
             <Regler label={tx.svg.positionY} wert={e.positionYMm} min={0} max={300} onChange={(n) => setze('positionYMm', n)} />
+            <Schalter label={tx.svg.spiegeln} wert={e.spiegeln} onChange={(b) => setze('spiegeln', b)} />
             {r?.svg && (
               <p class="klein">
                 {tx.svg.massstab(r.svg.massstab)} · {tx.svg.formen(dok.pfade.length)}

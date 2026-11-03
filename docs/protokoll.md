@@ -95,6 +95,9 @@ Silhouette Studio 4.4 sendet bei der Cameo 4 Pro fast dieselbe Folge (Mitschnitt
 | Cameo 5 Plus | `0x1141` | 372 | 2 |
 | Portrait 3 | `0x113A` | 203 | 1 |
 | Portrait 4 | `0x113F` | 216 | 1 |
+| Cameo 2 (ältere Linie) | `0x112B` | 304 | 1 |
+
+**Cameo 2, Test am 03.11.2026:** per WebUSB ohne weitere Einrichtung einwandfrei, obwohl die App ihr die Befehle der Cameo-4-Linie schickt. `Graphtec.py` sendet der Cameo 2 einen etwas anderen Satz (`!s` und `FX p` ohne Halter, kein `TG`, `TJ` und `J`, Ende mit `H`), die Geschwindigkeit geht dort nur bis 10. Die App begrenzt deshalb die Geschwindigkeit für dieses Profil auf 10.
 
 ⚠ Unter Windows belegt der Druckertreiber das Gerät; WebUSB kann es dann nicht öffnen.
 
