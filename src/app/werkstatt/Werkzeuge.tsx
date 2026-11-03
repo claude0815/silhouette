@@ -1,9 +1,10 @@
-/** Reiter „Werkzeuge“: Konturen versetzen (Offset) mit Anzeige der Abstandskarte. */
+/** Reiter „Werkzeuge“: Größe und Lage, Konturen versetzen (Offset) mit Anzeige der Abstandskarte. */
 import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '../../i18n/de';
 import { versatzInSvg, versetze, type VersatzErgebnis } from '../../werkzeuge/versatz';
 import { aendereText, dokument } from '../dokument';
+import { GroesseUndLage } from '../GroesseUndLage';
 import { auswahl, dok } from './zustand';
 
 const tv = t.app.werkstatt.versatz;
@@ -13,6 +14,16 @@ const letzte = signal<{ ergebnis: VersatzErgebnis; abstandMm: number } | null>(n
 const meldung = signal<string | null>(null);
 
 export function Werkzeuge() {
+  return (
+    <div class="werkzeuge">
+      <h3>{t.app.groesse.titel}</h3>
+      <GroesseUndLage />
+      <Versatzformular />
+    </div>
+  );
+}
+
+function Versatzformular() {
   const [abstand, setAbstand] = useState(3);
   const [nurAuswahl, setNurAuswahl] = useState(false);
   const [ersetzen, setErsetzen] = useState(false);
@@ -37,7 +48,7 @@ export function Werkzeuge() {
   };
 
   return (
-    <div class="werkzeuge" data-testid="versatz">
+    <div class="versatz" data-testid="versatz">
       <h3>{tv.titel}</h3>
       <p class="klein">{tv.einleitung}</p>
       <div class="zahlenfelder">

@@ -220,6 +220,23 @@ export const de = {
         '„Nächster Nachbar“ fährt immer zum nächstgelegenen Pfad, der schon dran ist, und beginnt dort an der nächsten Ecke. Das spart meist Leerfahrten. Das Verfahren ist aber „gierig“: Es denkt nie voraus, etwa an den Rückweg zum Ursprung. Darum ist es nicht immer das kürzeste.',
       ],
     },
+    groesse: {
+      titel: 'Größe und Lage',
+      jetzt: (b: string, h: string) => `Motiv: ${b} × ${h} mm`,
+      breite: 'Breite (mm)',
+      hoehe: 'Höhe (mm)',
+      links: 'Abstand links (mm)',
+      oben: 'Abstand oben (mm)',
+      halb: 'Halb so groß',
+      doppelt: 'Doppelt so groß',
+      einpassen: 'Größtmöglich auf die Matte',
+      keinMotiv: 'Das Dokument enthält noch keine Formen.',
+      begrenzt: 'Nicht ganz erreicht: Schritt 8 des Nachzeichnens erlaubt 5 bis 600 mm Breite und 0 bis 300 mm Abstand.',
+      erklaerungNachzeichnen:
+        'Breite und Höhe ändern sich immer zusammen, damit nichts verzerrt wird. Die Zeichnung kommt aus dem Nachzeichnen: Es werden die Regler in Schritt 8 verstellt.',
+      erklaerungEigen:
+        'Breite und Höhe ändern sich immer zusammen, damit nichts verzerrt wird. Geändert werden nur width, height und viewBox des <svg>-Elements – die Pfade bleiben, wie sie sind.',
+    },
     schneiden: {
       verbindung: 'Gerät',
       perUsb: 'Per USB',
@@ -267,7 +284,7 @@ export const de = {
       einzug: 'Diese Kante zuerst einlegen',
       ausserhalb: (n: number) => `${n} ${n === 1 ? 'Pfad liegt' : 'Pfade liegen'} außerhalb des Schneidebereichs.`,
       nichtsZuSchneiden: 'Das Dokument enthält nichts zum Schneiden. In der Werkstatt etwas zeichnen oder ein Bild nachzeichnen.',
-      imDokumentAendern: 'Lage und Größe im Dokument ändern',
+      imDokumentAendern: 'Code in der Werkstatt ansehen',
       schneiden: 'Schneiden',
       zeichnen: 'Zeichnen',
       abbrechen: 'Abbrechen',

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { oeffneWerkstatt, sammleFehler } from './hilfen';
+import { editorText, fertig, oeffneWerkstatt, sammleFehler, tippeInEditor } from './hilfen';
 
 test.describe('Schneiden (mit simuliertem Gerät)', () => {
   test('verbinden, Testfahrt, Messer mit Rückfrage, Abbrechen, vollständiger Auftrag', async ({ page }) => {
@@ -48,5 +48,32 @@ test.describe('Schneiden (mit simuliertem Gerät)', () => {
     await page.getByRole('button', { name: 'Schneiden', exact: true }).click();
     await expect(page.getByTestId('auftrag-fehler')).toContainText('außerhalb des Schneidebereichs');
     await expect(page.locator('.matte-pfad.draussen')).toHaveCount(1);
+    // Größtmöglich auf die Matte: passt danach mit Rand
+    await page.getByTestId('groesse-einpassen').click();
+    await expect(page.locator('.matte-pfad.draussen')).toHaveCount(0);
+    await expect(page.getByTestId('auftrag-fehler')).toHaveCount(0);
+  });
+
+  test('Größe ändern: Nachzeichnen folgt weiter, eigene Datei bekommt neue width/viewBox', async ({ page }) => {
+    const fehler = sammleFehler(page);
+    await page.goto('./');
+    await page.getByRole('button', { name: 'Beispielbild verwenden' }).click();
+    await fertig(page);
+    await page.getByRole('button', { name: 'Schneiden', exact: true }).click();
+    await page.getByTestId('groesse-breite').fill('50');
+    await page.getByTestId('groesse-breite').press('Enter');
+    await fertig(page);
+    await expect(page.getByTestId('groesse-jetzt')).toContainText('Motiv: 50 ×');
+    await expect(page.getByTestId('groesse')).toContainText('Regler in Schritt 8');
+
+    await oeffneWerkstatt(page);
+    await tippeInEditor(page, '<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="40mm" viewBox="0 0 60 40"><rect x="10" y="10" width="20" height="10"/></svg>');
+    await expect.poll(() => editorText(page)).toContain('height="10"/></svg>');
+    await page.getByRole('button', { name: 'Werkzeuge', exact: true }).click();
+    await page.getByTestId('groesse-hoehe').fill('30');
+    await page.getByTestId('groesse-hoehe').press('Enter');
+    await expect(page.getByTestId('groesse-jetzt')).toHaveText('Motiv: 60 × 30 mm');
+    await expect.poll(() => editorText(page)).toContain('<rect x="10" y="10" width="20" height="10"/>');
+    expect(fehler).toEqual([]);
   });
 });

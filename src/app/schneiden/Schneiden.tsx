@@ -16,6 +16,7 @@ import { pruefeUmgebung } from '../../cutter-test/umgebung';
 import { dokument } from '../dokument';
 import { Erklaerung, Kasten, Regler, Schalter } from '../schritte/Bausteine';
 import { bereich } from '../zustand';
+import { GroesseUndLage } from '../GroesseUndLage';
 import * as v from './verbindung';
 
 const tx = t.app.schneiden;
@@ -166,6 +167,10 @@ export function Schneiden() {
           {(!u.webUsb || !u.webBluetooth) && <p class="hinweis">{tx.hinweisBrowser}</p>}
           {betriebssystem === 'Windows' && <p class="hinweis">{tx.hinweisWindows}</p>}
           <p class="klein">{tx.hinweisStudio}</p>
+        </Kasten>
+
+        <Kasten titel={t.app.groesse.titel} testid="schneiden-groesse">
+          <GroesseUndLage bereich={schneidebereichMm(p, v.matte.value)} />
         </Kasten>
 
         <Kasten titel={tx.material}>

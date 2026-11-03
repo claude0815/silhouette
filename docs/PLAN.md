@@ -189,4 +189,6 @@ Der Machbarkeitstest vor Ort steht noch aus. Vorbereitet wird alles, was davon n
 
 - ✅ Konturen versetzen (Offset, Stufe 4): Werkstatt-Reiter „Werkzeuge“. Verfahren über eine Abstandskarte (`src/werkzeuge/versatz.ts`): rastern (0,1 mm, bei großen Formen gröber, höchstens 2 Mio. Zellen), exakte euklidische Distanztransformation (Felzenszwalb/Huttenlocher), Schwelle, Marching Squares, Douglas-Peucker. Runde Ecken, Verschmelzen und verschwindende Löcher ergeben sich von selbst; die Abstandskarte wird angezeigt. Entscheidung gegen Linien-Offset (Clipper o. Ä.): weniger Sonderfälle, nutzt die vorhandenen Lern-Algorithmen, Genauigkeit 0,1 mm reicht zum Schneiden.
 
+- ✅ Größe und Lage beim Schneiden (03.11.2026): Kasten „Größe und Lage“ im Bereich Schneiden und im Werkstatt-Reiter „Werkzeuge“ (Breite/Höhe gekoppelt, Abstand links/oben, halb/doppelt, größtmöglich auf die Matte). Folgt das Dokument dem Nachzeichnen, werden die Regler von Schritt 8 verstellt, damit es weiter folgt; sonst ändert `src/svg/groesse.ts` nur width, height und viewBox der Wurzel – die Pfade bleiben unverändert (Grundsatz: alles liest aus dem SVG-Dokument).
+
 Offen aus Stufe 4: Farbebenen, Text in Pfade. Außerdem Potrace als Option „Beste Qualität“.
