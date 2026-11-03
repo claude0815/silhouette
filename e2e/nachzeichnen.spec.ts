@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fertig, sammleFehler } from './hilfen';
+import { editorText, fertig, oeffneWerkstatt, sammleFehler, tippeInEditor } from './hilfen';
 
 test.describe('Nachzeichnen', () => {
   test('Beispielbild durch alle acht Schritte', async ({ page }) => {
@@ -52,6 +52,32 @@ test.describe('Nachzeichnen', () => {
     await expect(page.locator('.seite .kasten').first()).toContainText('150 × 200 Pixel');
     await page.getByRole('button', { name: 'Zuschnitt aufheben' }).click();
     await expect(page.locator('.seite .kasten').first()).toContainText('300 × 200 Pixel');
+    expect(fehler).toEqual([]);
+  });
+
+  test('„In der SVG-Werkstatt bearbeiten“ ersetzt eine eigene Fassung erst nach Rückfrage', async ({ page }) => {
+    const fehler = sammleFehler(page);
+    await page.goto('./');
+    await page.getByRole('button', { name: 'Beispielbild verwenden' }).click();
+    await fertig(page);
+    await oeffneWerkstatt(page);
+    await tippeInEditor(page, '<svg xmlns="http://www.w3.org/2000/svg" width="50mm" height="30mm" viewBox="0 0 50 30"><rect x="5" y="5" width="40" height="20"/></svg>');
+    await expect.poll(() => editorText(page)).toContain('height="20"/></svg>');
+
+    await page.getByRole('button', { name: 'Nachzeichnen', exact: true }).click();
+    await page.locator('.schritt-knopf').nth(7).click();
+    await expect(page.getByTestId('eigene-fassung-hinweis')).toBeVisible();
+
+    // Abbrechen: nichts passiert
+    page.once('dialog', (d) => d.dismiss());
+    await page.getByTestId('in-werkstatt').click();
+    await expect(page.getByTestId('svg-code')).toBeVisible();
+
+    // Bestätigen: Werkstatt zeigt das nachgezeichnete SVG
+    page.once('dialog', (d) => d.accept());
+    await page.getByTestId('in-werkstatt').click();
+    await expect.poll(() => editorText(page)).toContain('id="form-1"');
+    await expect.poll(() => editorText(page)).not.toContain('<rect x="5"');
     expect(fehler).toEqual([]);
   });
 });

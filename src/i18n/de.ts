@@ -462,6 +462,10 @@ export const de = {
       code: 'SVG-Code',
       herunterladenSvg: 'SVG herunterladen',
       inWerkstatt: 'In der SVG-Werkstatt bearbeiten',
+      eigeneFassung:
+        'In der Werkstatt liegt eine eigene Fassung. Simulation und Schneiden verwenden diese, nicht das SVG hier. „In der SVG-Werkstatt bearbeiten“ ersetzt sie nach Rückfrage.',
+      werkstattFrage:
+        'In der Werkstatt ist schon eine eigene Fassung geöffnet. Soll sie durch dieses nachgezeichnete SVG ersetzt werden?\n\nWer die eigene Fassung noch braucht: Abbrechen und sie in der Werkstatt erst mit „SVG speichern“ sichern.',
       herunterladenDxf: 'DXF herunterladen (für Silhouette Studio)',
       kopieren: 'Code kopieren',
       kopiert: 'Kopiert',

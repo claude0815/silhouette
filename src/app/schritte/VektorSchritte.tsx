@@ -9,6 +9,7 @@ import { istGerade, type Bezierpfad } from '../../pipeline/glaetten';
 import { FALL_SEGMENTE, kantenmitte, zellenMitKontur } from '../../pipeline/konturen';
 import { svgZahl, teilpfad } from '../../pipeline/svg-erzeugen';
 import { leseSvg, zeichenDaten } from '../../svg/dokument';
+import { dokument, uebernimmNachzeichnen } from '../dokument';
 import { befehlsGeometrie, naechsterBefehl } from '../../svg/pfad';
 import { befehlErklaerung, Befehlsmarkierung } from '../svgansicht';
 import { t } from '../../i18n/de';
@@ -507,8 +508,26 @@ export function Schritt8() {
             )}
           </Kasten>
           <Kasten>
+            {dokument.value.quelle === 'eigen' && dokument.value.text !== text && (
+              <p class="hinweis" data-testid="eigene-fassung-hinweis">
+                {tx.svg.eigeneFassung}
+              </p>
+            )}
             <div class="knoepfe senkrecht">
-              <button onClick={() => (bereich.value = 'werkstatt')}>{tx.svg.inWerkstatt}</button>
+              <button
+                onClick={() => {
+                  // Liegt in der Werkstatt schon eine eigene Fassung, wird sie erst nach Rückfrage ersetzt
+                  const d = dokument.value;
+                  if (d.quelle === 'eigen' && d.text !== text) {
+                    if (!confirm(tx.svg.werkstattFrage)) return;
+                    uebernimmNachzeichnen();
+                  }
+                  bereich.value = 'werkstatt';
+                }}
+                data-testid="in-werkstatt"
+              >
+                {tx.svg.inWerkstatt}
+              </button>
               <button onClick={() => speichereText(text, 'vom-pixel-zum-schnitt.svg', 'image/svg+xml')}>{tx.svg.herunterladenSvg}</button>
               <button onClick={() => speichereText(svgZuDxf(text).dxf, 'vom-pixel-zum-schnitt.dxf', 'application/dxf')}>
                 {tx.svg.herunterladenDxf}
