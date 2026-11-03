@@ -97,12 +97,13 @@ export function App() {
       <header class="kopf">
         <h1>{tx.titel}</h1>
         <Bereichsleiste />
-        {bereich.value === 'nachzeichnen' && <Schrittleiste />}
         <div class="status" aria-live="polite">
           {rechnet.value && <span class="rechnet">{tx.rechnet}</span>}
           <Kopfzeilenstatus />
         </div>
       </header>
+      {/* Die acht Schritte in einer eigenen Zeile: immer ganz sichtbar, ohne seitliches Scrollen */}
+      {bereich.value === 'nachzeichnen' && !zeigeUeber.value && <Schrittleiste />}
       {neueVersion.value && (
         <p class="update-hinweis" role="status" data-testid="update-hinweis">
           {tx.neueVersion} <button onClick={aktualisiere}>{tx.neuLaden}</button>
