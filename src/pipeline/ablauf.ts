@@ -35,6 +35,7 @@ export interface Einstellungen {
   breiteMm: number;
   positionXMm: number;
   positionYMm: number;
+  spiegeln: boolean;
 }
 
 export const STANDARD: Einstellungen = {
@@ -51,6 +52,7 @@ export const STANDARD: Einstellungen = {
   breiteMm: 100,
   positionXMm: 10,
   positionYMm: 10,
+  spiegeln: false,
 };
 
 /** Welche Einstellungen gehören zu welchem Schritt? Schritt 1 ist das Bild selbst. */
@@ -61,7 +63,7 @@ export const EINSTELLUNGEN_JE_SCHRITT: Record<number, readonly (keyof Einstellun
   5: [],
   6: ['toleranz'],
   7: ['glaetten', 'staerke', 'eckenWinkel'],
-  8: ['breiteMm', 'positionXMm', 'positionYMm'],
+  8: ['breiteMm', 'positionXMm', 'positionYMm', 'spiegeln'],
 };
 
 export interface VereinfachteForm {
@@ -213,6 +215,7 @@ export function fuehreAus(
         bildHoehePx: bild.hoehe,
         breiteMm: e.breiteMm,
         position: { x: e.positionXMm, y: e.positionYMm },
+        spiegeln: e.spiegeln,
       });
     });
 

@@ -165,7 +165,7 @@ export function auftragZuBefehlen(job: CutJob, profil: GeraeteProfil): string[] 
   const h = w.halter;
   const stift = w.art === 'stift';
   const druck = begrenze(w.druck, 1, profil.maxDruck);
-  const tempo = begrenze(w.geschwindigkeit, 1, 30);
+  const tempo = begrenze(w.geschwindigkeit, 1, profil.maxGeschwindigkeit);
 
   // 1. und 2. Matte, Ausrichtung und Schneidebereich (set_cutting_mat)
   const befehle: string[] = kopfBefehle(profil, job.matte);

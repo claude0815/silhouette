@@ -230,6 +230,11 @@ export const de = {
       halb: 'Halb so groß',
       doppelt: 'Doppelt so groß',
       einpassen: 'Größtmöglich auf die Matte',
+      spiegeln: 'Spiegeln (seitenverkehrt, z. B. für Flexfolie)',
+      spiegelnErklaerung:
+        'Gespiegelt wird mit einer Gruppe <g transform="matrix(-1 0 0 1 c 0)">: x wird zu c − x, das Motiv bleibt an seiner Stelle.',
+      spiegelnFehlt: 'Diese Voreinstellung schneidet man gespiegelt, das Motiv ist aber nicht gespiegelt.',
+      jetztSpiegeln: 'Jetzt spiegeln',
       keinMotiv: 'Das Dokument enthält noch keine Formen.',
       begrenzt: 'Nicht ganz erreicht: Schritt 8 des Nachzeichnens erlaubt 5 bis 600 mm Breite und 0 bis 300 mm Abstand.',
       erklaerungNachzeichnen:
@@ -453,6 +458,7 @@ export const de = {
       hoehe: (mm: number) => `Höhe: ${mm.toFixed(1).replace('.', ',')} mm`,
       positionX: 'Abstand links (mm)',
       positionY: 'Abstand oben (mm)',
+      spiegeln: 'Spiegeln (seitenverkehrt, z. B. für Flexfolie)',
       code: 'SVG-Code',
       herunterladenSvg: 'SVG herunterladen',
       inWerkstatt: 'In der SVG-Werkstatt bearbeiten',

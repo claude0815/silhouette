@@ -20,6 +20,7 @@
  */
 import type { Punkt } from './bilder';
 import { istGerade, type Bezierpfad } from './glaetten';
+import { spiegelTag } from '../svg/spiegeln';
 
 /** Eine Form: Außenkontur und Löcher, je als Vieleck oder als Bézier-Pfad, in Pixeln. */
 export interface SvgForm {
@@ -38,6 +39,8 @@ export interface SvgOptionen {
   position?: Punkt;
   /** Nachkommastellen; 2 Stellen = 0,01 mm, feiner als der Cutter (0,05 mm). */
   stellen?: number;
+  /** Waagerecht spiegeln (für Flexfolie), an der Mitte des Bilds */
+  spiegeln?: boolean;
 }
 
 /** Zahl für SVG: Punkt als Dezimaltrennzeichen, ohne überflüssige Nullen. */
@@ -95,10 +98,13 @@ export function erzeugeSvg(formen: readonly SvgForm[], o: SvgOptionen): SvgErgeb
   const zeilen = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${z(breiteMm)}mm" height="${z(hoeheMm)}mm" viewBox="0 0 ${z(breiteMm)} ${z(hoeheMm)}">`,
   ];
+  // Spiegeln: eine Gruppe mit x' = c − x, c = linker + rechter Rand des Bilds (siehe svg/spiegeln.ts)
+  if (o.spiegeln) zeilen.push(spiegelTag(2 * pos.x + o.breiteMm));
   formen.forEach((f, i) => {
     const d = [f.aussen, ...f.loecher].map((k) => teilpfad(k, pt)).join(' ');
     zeilen.push(`  <path id="form-${i + 1}" fill-rule="evenodd" d="${d}"/>`);
   });
+  if (o.spiegeln) zeilen.push('</g>');
   zeilen.push('</svg>');
   return { text: zeilen.join('\n') + '\n', breiteMm, hoeheMm, massstab };
 }

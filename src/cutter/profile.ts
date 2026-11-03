@@ -27,13 +27,15 @@ export interface GeraeteProfil {
   zweiHalter: boolean;
   /** Höchster erlaubter Druck. */
   maxDruck: number;
+  /** Höchste Geschwindigkeitsstufe: 30 ab Cameo 4, 10 bei älteren Modellen. */
+  maxGeschwindigkeit: number;
   /** Anfänge des Bluetooth-Namens bzw. der Firmware-Antwort (FG), in Großbuchstaben. */
   namen: readonly string[];
 }
 
 /**
  * Die Modelle der Schule und ihre nahen Verwandten.
- * Alle gehören in Graphtec.py zur Produktlinie „Cameo 4“ und sprechen denselben Befehlssatz.
+ * Alle bis auf die Cameo 2 gehören in Graphtec.py zur Produktlinie „Cameo 4“ und sprechen denselben Befehlssatz.
  * Reihenfolge der Namen: Spezielle Namen müssen vor allgemeinen geprüft werden
  * („CAMEO 4 PLUS“ vor „CAMEO 4“), siehe profilFuerName().
  */
@@ -47,6 +49,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 4'],
   },
   {
@@ -58,6 +61,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 4 PLUS'],
   },
   {
@@ -69,6 +73,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 4 PRO'],
   },
   {
@@ -80,6 +85,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 5'],
   },
   {
@@ -91,6 +97,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 5 PLUS'],
   },
   {
@@ -102,6 +109,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 3000,
     zweiHalter: true,
     maxDruck: 40,
+    maxGeschwindigkeit: 30,
     namen: ['CAMEO 5 ALPHA'],
   },
   {
@@ -113,6 +121,7 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 18290,
     zweiHalter: false,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['PORTRAIT3', 'PORTRAIT 3'],
   },
   {
@@ -124,7 +133,23 @@ export const profile: readonly GeraeteProfil[] = [
     laengeMm: 18290,
     zweiHalter: false,
     maxDruck: 33,
+    maxGeschwindigkeit: 30,
     namen: ['PORTRAIT4', 'PORTRAIT 4'],
+  },
+  {
+    // Ältere Linie: Graphtec.py sendet ihr einen etwas anderen Befehlssatz (z. B. „!s“ statt „!s,h“,
+    // kein TG). Im Test am 03.11.2026 hat sie die Befehle der Cameo-4-Linie per WebUSB trotzdem
+    // einwandfrei ausgeführt. Werte aus Graphtec.py: 304 mm breit, ein Halter, Geschwindigkeit 1 bis 10.
+    id: 'cameo2',
+    name: 'Cameo 2',
+    vendorId: VENDOR_ID_GRAPHTEC,
+    productId: 0x112b,
+    breiteMm: 304,
+    laengeMm: 3000,
+    zweiHalter: false,
+    maxDruck: 33,
+    maxGeschwindigkeit: 10,
+    namen: [], // kein Bluetooth
   },
 ];
 
@@ -140,6 +165,7 @@ export function unbekanntesProfil(vendorId: number, productId: number, name?: st
     laengeMm: 3000,
     zweiHalter: false,
     maxDruck: 33,
+    maxGeschwindigkeit: 10, // die kleinste bekannte Höchststufe
     namen: [],
   };
 }
