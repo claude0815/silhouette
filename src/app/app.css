@@ -603,7 +603,7 @@
 }
 .zahlenfelder {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.4rem 0.75rem;
 }
 .zahlenfeld {
@@ -614,6 +614,8 @@
 .zahlenfeld input {
   font: inherit;
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ---- Über und Lizenzen ---- */
@@ -1174,4 +1176,12 @@
 .werkzeuge ol {
   padding-left: 1.2rem;
   font-size: 0.9rem;
+}
+.werkzeuge .versatz {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed #cbd5e1;
+}
+.groesse .knoepfe {
+  flex-wrap: wrap;
 }
