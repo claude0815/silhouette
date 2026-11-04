@@ -106,6 +106,22 @@ export function zellenMitKontur(bild: Binaerbild): Zelle[] {
   return zellen;
 }
 
+/**
+ * Zellen mit Kontur in einem Ausschnitt von g × g Pixeln ab (x0 | y0), für die Lupe.
+ * Die Fälle werden aus dem ganzen Bild bestimmt, damit am Rand des Ausschnitts keine
+ * Kontur entsteht, die es im Bild gar nicht gibt. Zwischen g × g Pixeln liegen (g − 1) × (g − 1) Zellen.
+ */
+export function zellenImAusschnitt(bild: Binaerbild, x0: number, y0: number, g: number): Zelle[] {
+  const zellen: Zelle[] = [];
+  for (let zy = y0; zy < y0 + g - 1; zy++) {
+    for (let zx = x0; zx < x0 + g - 1; zx++) {
+      const f = fall(bild, zx, zy);
+      if (f !== 0 && f !== 15) zellen.push({ x: zx, y: zy, fall: f });
+    }
+  }
+  return zellen;
+}
+
 export interface Kontur {
   /** Geschlossener Linienzug; der letzte Punkt wird nicht wiederholt. */
   punkte: Punkt[];

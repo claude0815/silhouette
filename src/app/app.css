@@ -339,38 +339,138 @@
 }
 
 /* ---- Marching-Squares-Animation ---- */
-.ms-flaeche {
-  width: 100%;
-  background: #fff;
+/* Marching Squares: Bild links, Lupe rechts */
+.ms-teilung {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.ms-uebersicht {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid #cbd5e1;
+}
+.ms-lupenbereich {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+}
+.ms-lupenbereich > p {
+  margin: 0.25rem 0;
+}
+.ms-lupe {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+}
+.ms-lupe svg {
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
 }
 .ms-vorne {
-  fill: #475569;
-  stroke: #cbd5e1;
+  fill: #64748b;
+  stroke: #e2e8f0;
   stroke-width: 0.02;
 }
 .ms-hinten {
   fill: #fff;
-  stroke: #e2e8f0;
+  stroke: #cbd5e1;
   stroke-width: 0.02;
 }
-.ms-ecke-voll {
-  fill: #f8fafc;
+.ms-mitte-voll {
+  fill: #e2e8f0;
 }
-.ms-ecke-leer {
+.ms-mitte-leer {
   fill: #94a3b8;
 }
-.ms-zelle {
-  fill: rgba(245, 158, 11, 0.35);
-  stroke: #f59e0b;
+.ms-eckpixel {
+  fill: none;
+  stroke: #2563eb;
   stroke-width: 0.06;
+}
+.ms-zelle {
+  fill: rgba(245, 158, 11, 0.25);
+  stroke: #d97706;
+  stroke-width: 0.04;
+  stroke-dasharray: 0.08 0.06;
+}
+.ms-gewicht {
+  font: 600 0.3px system-ui, sans-serif;
+  text-anchor: middle;
+  fill: #1d4ed8;
+}
+.ms-gewicht.gross {
+  font-size: 0.3px;
+}
+.ms-gewicht.auf-voll,
+.ms-wert.auf-voll {
+  fill: #fff;
+}
+.ms-wert {
+  font: 600 0.2px system-ui, sans-serif;
+  text-anchor: middle;
+  fill: #475569;
+}
+.ms-kantenmitte {
+  fill: #d97706;
 }
 .ms-segment {
   stroke: #dc2626;
-  stroke-width: 0.12;
+  stroke-width: 0.1;
   stroke-linecap: round;
+}
+.ms-segment.neu {
+  stroke-width: 0.14;
+}
+.ms-segment.nah {
+  stroke-width: 0.06;
+}
+.ms-segment.klein {
+  stroke-width: 0.1;
 }
 .ms-pfeil {
   fill: #dc2626;
+}
+.ms-nahaufnahme svg {
+  display: block;
+  width: 60%;
+  margin: 0 auto 0.4rem;
+}
+.ms-nahaufnahme p {
+  margin: 0.3rem 0;
+}
+.ms-falltabelle {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.ms-falltabelle figure {
+  margin: 0;
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  text-align: center;
+}
+.ms-falltabelle figure.aktiv {
+  border-color: #d97706;
+  background: #fef3c7;
+}
+.ms-falltabelle figcaption {
+  font-size: 0.75rem;
+}
+.farbfeld.zelle {
+  background: rgba(245, 158, 11, 0.35);
+  border: 1px dashed #d97706;
+}
+.farbfeld.eckpixel {
+  background: transparent;
+  border: 2px solid #2563eb;
 }
 
 /* ---- SVG-Schritt ---- */
