@@ -18,7 +18,7 @@ test.describe('Nachzeichnen', () => {
     // Marching Squares: Ausschnitt wählen und einen Schritt weiter
     const c = (await page.locator('.bildansicht canvas').boundingBox())!;
     await page.mouse.click(c.x + (c.width * 510) / 640, c.y + (c.height * 30) / 400);
-    await page.getByRole('button', { name: 'Einzelschritt' }).click();
+    await page.getByRole('button', { name: 'Nächste Zelle' }).click();
     await expect(page.getByTestId('ms-zelle')).toContainText('Fall');
 
     // Vereinfachen: größere Toleranz → weniger Punkte

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { binaerAusText, type Binaerbild } from './bilder';
 import { findeBereiche } from './entrauschen';
-import { FALL_SEGMENTE, fall, findeKonturen, gruppiere, kantenmitte, vorzeichenFlaeche, zellenMitKontur } from './konturen';
+import { FALL_SEGMENTE, fall, findeKonturen, gruppiere, kantenmitte, vorzeichenFlaeche, zellenImAusschnitt, zellenMitKontur } from './konturen';
 
 describe('Fallnummern', () => {
   it('liest die vier Ecken als Binärzahl', () => {
@@ -108,5 +108,21 @@ describe('zellenMitKontur', () => {
   it('liefert die Zellen in Lesereihenfolge, ohne Fall 0 und 15', () => {
     const zellen = zellenMitKontur(binaerAusText(['#']));
     expect(zellen.map((z) => z.fall)).toEqual([2, 1, 4, 8]);
+  });
+});
+
+describe('zellenImAusschnitt', () => {
+  it('nimmt die Fälle aus dem ganzen Bild: kein Rand am Ausschnitt', () => {
+    // Ganz gefülltes Bild: Im Inneren gibt es keine Kontur, nur am Bildrand
+    const bild = binaerAusText(['######', '######', '######', '######', '######', '######']);
+    expect(zellenImAusschnitt(bild, 1, 1, 4)).toEqual([]);
+    const amRand = zellenImAusschnitt(bild, 0, 0, 3);
+    expect(amRand).toEqual([]); // Zellen (0|0) bis (1|1) liegen ganz im Bild
+  });
+
+  it('liefert (g − 1)² Zellen höchstens und die richtigen Fälle', () => {
+    const bild = binaerAusText(['....', '.##.', '.##.', '....']);
+    const z = zellenImAusschnitt(bild, 0, 0, 4);
+    expect(z.map((c) => c.fall)).toEqual([2, 3, 1, 6, 9, 4, 12, 8]);
   });
 });

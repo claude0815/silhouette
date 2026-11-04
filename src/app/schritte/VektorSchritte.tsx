@@ -6,7 +6,7 @@ import { speichereText } from '../../gemeinsam/datei';
 import type { Binaerbild, Punkt } from '../../pipeline/bilder';
 import { formAnPunkt } from '../../pipeline/geometrie';
 import { istGerade, type Bezierpfad } from '../../pipeline/glaetten';
-import { FALL_SEGMENTE, kantenmitte, zellenMitKontur } from '../../pipeline/konturen';
+import { FALL_SEGMENTE, kantenmitte, zellenImAusschnitt, type Kante, type Zelle } from '../../pipeline/konturen';
 import { svgZahl, teilpfad } from '../../pipeline/svg-erzeugen';
 import { leseSvg, zeichenDaten } from '../../svg/dokument';
 import { dokument, uebernimmNachzeichnen } from '../dokument';
@@ -34,96 +34,156 @@ function speichereJson(daten: unknown, name: string) {
 // ---------------------------------------------------------------------------
 // 5. Konturen finden
 
-const AUSSCHNITT = 16;
+const AUSSCHNITT = 10;
 const ausschnitt = signal<{ x: number; y: number } | null>(null);
+const KANTEN_NAME: Record<Kante, string> = { T: 'oben', R: 'rechts', B: 'unten', L: 'links' };
+/** Gewichte der vier Ecken im Uhrzeigersinn ab oben links, mit ihrer Lage relativ zur Zelle */
+const ECKEN = [
+  { gewicht: 8, dx: 0, dy: 0 },
+  { gewicht: 4, dx: 1, dy: 0 },
+  { gewicht: 2, dx: 1, dy: 1 },
+  { gewicht: 1, dx: 0, dy: 1 },
+] as const;
 
-function schneideAus(bild: Binaerbild, x0: number, y0: number, g: number): Binaerbild {
-  const daten = new Uint8Array(g * g);
-  for (let y = 0; y < g; y++)
-    for (let x = 0; x < g; x++) {
-      const bx = x0 + x;
-      const by = y0 + y;
-      if (bx < bild.breite && by < bild.hoehe) daten[y * g + x] = bild.daten[by * bild.breite + bx]!;
-    }
-  return { breite: g, hoehe: g, daten };
+/** Wert eines Pixels im ganzen Bild; außerhalb 0 */
+const wert = (bild: Binaerbild, x: number, y: number) =>
+  x < 0 || y < 0 || x >= bild.breite || y >= bild.hoehe ? 0 : bild.daten[y * bild.breite + x]!;
+
+/** Pfeil-Markierung für Teilstücke (je SVG eine eigene id, weil mehrere SVGs auf der Seite sind) */
+function Pfeil(props: { id: string }) {
+  return (
+    <defs>
+      <marker id={props.id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+        <path d="M0 0L10 5L0 10z" class="ms-pfeil" />
+      </marker>
+    </defs>
+  );
 }
 
-/** Marching Squares Schritt für Schritt auf einem kleinen Ausschnitt. */
-function Animation(props: { bild: Binaerbild; x0: number; y0: number }) {
-  const g = AUSSCHNITT;
-  const teil = useMemo(() => schneideAus(props.bild, props.x0, props.y0, g), [props.bild, props.x0, props.y0]);
-  const zellen = useMemo(() => zellenMitKontur(teil), [teil]);
-  const [index, setIndex] = useState(0);
-  const [laeuft, setLaeuft] = useState(false);
-  const [tempo, setTempo] = useState(8);
-
-  useEffect(() => {
-    setIndex(0);
-    setLaeuft(false);
-  }, [teil]);
-  useEffect(() => {
-    if (!laeuft) return;
-    const id = setInterval(() => setIndex((i) => (i < zellen.length ? i + 1 : i)), 1000 / tempo);
-    return () => clearInterval(id);
-  }, [laeuft, tempo, zellen.length]);
-  useEffect(() => {
-    if (index >= zellen.length) setLaeuft(false);
-  }, [index, zellen.length]);
-
-  const aktuell = zellen[index - 1];
-  const linien = zellen.slice(0, index).flatMap((z) =>
-    FALL_SEGMENTE[z.fall]!.map(([von, nach]) => {
-      const a = kantenmitte(z.x, z.y, von);
-      const b = kantenmitte(z.x, z.y, nach);
-      return <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} class="ms-segment" marker-end="url(#pfeil)" />;
-    }),
+function Teilstuecke(props: { zelle: Zelle; dx?: number; dy?: number; klasse: string; pfeil: string }) {
+  const { zelle, dx = 0, dy = 0 } = props;
+  return (
+    <>
+      {FALL_SEGMENTE[zelle.fall]!.map(([von, nach]) => {
+        const a = kantenmitte(zelle.x, zelle.y, von);
+        const b = kantenmitte(zelle.x, zelle.y, nach);
+        return <line x1={a.x - dx} y1={a.y - dy} x2={b.x - dx} y2={b.y - dy} class={props.klasse} marker-end={`url(#${props.pfeil})`} />;
+      })}
+    </>
   );
+}
+
+/**
+ * Die Lupe: ein Ausschnitt von 10 × 10 Pixeln, groß gezeichnet. Die vier Pixel der aktuellen Zelle
+ * sind umrahmt und tragen ihre Gewichte; die Zelle selbst ist das gestrichelte Quadrat zwischen
+ * ihren Mittelpunkten.
+ */
+function Lupe(props: { bild: Binaerbild; x0: number; y0: number; zellen: Zelle[]; index: number }) {
+  const { bild, x0, y0, zellen, index } = props;
+  const g = AUSSCHNITT;
+  const aktuell = zellen[index - 1];
   const pixel = [];
   for (let y = 0; y < g; y++)
     for (let x = 0; x < g; x++) {
-      const v = teil.daten[y * g + x];
+      const v = wert(bild, x0 + x, y0 + y);
       pixel.push(<rect x={x} y={y} width={1} height={1} class={v ? 'ms-vorne' : 'ms-hinten'} />);
-      pixel.push(<circle cx={x + 0.5} cy={y + 0.5} r={0.09} class={v ? 'ms-ecke-voll' : 'ms-ecke-leer'} />);
+      pixel.push(<circle cx={x + 0.5} cy={y + 0.5} r={0.06} class={v ? 'ms-mitte-voll' : 'ms-mitte-leer'} />);
     }
-  const bits = aktuell ? [8, 4, 2, 1].map((b) => `${aktuell.fall & b ? 1 : 0}·${b}`).join(' + ') : '';
-
   return (
-    <div class="animation" data-testid="animation">
-      <p class="klein">{tx.konturen.ausschnittInfo(props.x0, props.y0, g)}</p>
-      <svg viewBox={`-1 -1 ${g + 2} ${g + 2}`} class="ms-flaeche">
-        <defs>
-          <marker id="pfeil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-            <path d="M0 0L10 5L0 10z" class="ms-pfeil" />
-          </marker>
-        </defs>
+    <div class="ms-lupe" data-testid="ms-lupe">
+      <svg viewBox={`-0.3 -0.3 ${g + 0.6} ${g + 0.6}`}>
+        <Pfeil id="pfeil-lupe" />
         {pixel}
-        {aktuell && <rect x={aktuell.x + 0.5} y={aktuell.y + 0.5} width={1} height={1} class="ms-zelle" />}
-        {linien}
-      </svg>
-      <p data-testid="ms-zelle">
-        {aktuell ? (
-          <>
-            {tx.konturen.zelle(props.x0 + aktuell.x, props.y0 + aktuell.y, aktuell.fall)}
-            <br />
-            <code>
-              {bits} = {aktuell.fall}
-            </code>
-          </>
-        ) : (
-          ' '
+        {zellen.slice(0, Math.max(0, index - 1)).map((z) => (
+          <Teilstuecke zelle={z} dx={x0} dy={y0} klasse="ms-segment" pfeil="pfeil-lupe" />
+        ))}
+        {aktuell && (
+          <g>
+            {ECKEN.map((e) => {
+              const px = aktuell.x - x0 + e.dx;
+              const py = aktuell.y - y0 + e.dy;
+              const voll = wert(bild, aktuell.x + e.dx, aktuell.y + e.dy) === 1;
+              return (
+                <>
+                  <rect x={px} y={py} width={1} height={1} class="ms-eckpixel" />
+                  <text x={px + (e.dx ? 0.75 : 0.25)} y={py + (e.dy ? 0.92 : 0.32)} class={`ms-gewicht ${voll ? 'auf-voll' : ''}`}>
+                    {e.gewicht}
+                  </text>
+                </>
+              );
+            })}
+            <rect x={aktuell.x - x0 + 0.5} y={aktuell.y - y0 + 0.5} width={1} height={1} class="ms-zelle" />
+            <Teilstuecke zelle={aktuell} dx={x0} dy={y0} klasse="ms-segment neu" pfeil="pfeil-lupe" />
+          </g>
         )}
+      </svg>
+    </div>
+  );
+}
+
+/** Nahaufnahme der aktuellen Zelle: vier Pixel, ihre Gewichte, die Kantenmitten und die Rechnung */
+function Zellnahaufnahme(props: { bild: Binaerbild; zelle: Zelle }) {
+  const { bild, zelle } = props;
+  const tk = tx.konturen;
+  const werte = ECKEN.map((e) => wert(bild, zelle.x + e.dx, zelle.y + e.dy));
+  const rechnung = ECKEN.map((e, i) => `${e.gewicht}·${werte[i]}`).join(' + ');
+  const kanten: Kante[] = ['T', 'R', 'B', 'L'];
+  const lokal = { ...zelle, x: 0, y: 0 };
+  return (
+    <div class="ms-nahaufnahme" data-testid="ms-zelle">
+      <svg viewBox="-0.15 -0.15 2.3 2.3">
+        <Pfeil id="pfeil-nah" />
+        {ECKEN.map((e, i) => (
+          <>
+            <rect x={e.dx} y={e.dy} width={1} height={1} class={werte[i] ? 'ms-vorne' : 'ms-hinten'} />
+            {/* Beschriftung in der äußeren Ecke des Pixels, damit sie die Zelle nicht verdeckt */}
+            <text x={e.dx ? 1.75 : 0.25} y={e.dy ? 1.88 : 0.36} class={`ms-gewicht gross ${werte[i] ? 'auf-voll' : ''}`}>
+              {e.gewicht}
+            </text>
+            <text x={e.dx ? 1.75 : 0.25} y={e.dy ? 1.42 : 0.72} class={`ms-wert ${werte[i] ? 'auf-voll' : ''}`}>
+              {werte[i] ? tk.vordergrund : tk.hintergrund}
+            </text>
+          </>
+        ))}
+        <rect x={0.5} y={0.5} width={1} height={1} class="ms-zelle" />
+        {kanten.map((k) => {
+          const p = kantenmitte(0, 0, k);
+          return <circle cx={p.x} cy={p.y} r={0.04} class="ms-kantenmitte" />;
+        })}
+        <Teilstuecke zelle={lokal} klasse="ms-segment nah" pfeil="pfeil-nah" />
+      </svg>
+      <p class="klein">{tk.nahLegende}</p>
+      <p>
+        <strong>{tk.zelle(zelle.x, zelle.y, zelle.fall)}</strong>
+        <br />
+        <code>
+          {rechnung} = {zelle.fall}
+        </code>
       </p>
-      <p class="klein">{index >= zellen.length && zellen.length > 0 ? tx.konturen.fertig : tx.konturen.fortschritt(index, zellen.length)}</p>
-      <div class="knoepfe">
-        <button onClick={() => setLaeuft(!laeuft)} disabled={index >= zellen.length}>
-          {laeuft ? tx.konturen.pause : tx.konturen.start}
-        </button>
-        <button onClick={() => setIndex((i) => Math.min(zellen.length, i + 1))} disabled={laeuft || index >= zellen.length}>
-          {tx.konturen.schritt}
-        </button>
-        <button onClick={() => setIndex(0)}>{tx.konturen.neuStart}</button>
-      </div>
-      <Regler label={tx.konturen.tempo} wert={tempo} min={1} max={60} onChange={setTempo} />
+      <p class="klein">
+        {FALL_SEGMENTE[zelle.fall]!.map(([von, nach]) => tk.linie(KANTEN_NAME[von], KANTEN_NAME[nach])).join(' ')}
+        {(zelle.fall === 5 || zelle.fall === 10) && ' ' + tk.sattel}
+      </p>
+    </div>
+  );
+}
+
+/** Alle 16 Fälle als kleine Bilder; der aktuelle ist hervorgehoben. */
+function Falltabelle(props: { aktuell?: number }) {
+  return (
+    <div class="ms-falltabelle" data-testid="falltabelle">
+      {FALL_SEGMENTE.map((_, f) => (
+        <figure class={f === props.aktuell ? 'aktiv' : ''}>
+          <svg viewBox="-0.1 -0.1 2.2 2.2">
+            <Pfeil id={`pfeil-fall-${f}`} />
+            {ECKEN.map((e) => (
+              <rect x={e.dx} y={e.dy} width={1} height={1} class={f & e.gewicht ? 'ms-vorne' : 'ms-hinten'} />
+            ))}
+            <Teilstuecke zelle={{ x: 0, y: 0, fall: f }} klasse="ms-segment klein" pfeil={`pfeil-fall-${f}`} />
+          </svg>
+          <figcaption>{f === 5 || f === 10 ? `${f}*` : f}</figcaption>
+        </figure>
+      ))}
     </div>
   );
 }
@@ -131,6 +191,7 @@ function Animation(props: { bild: Binaerbild; x0: number; y0: number }) {
 export function Schritt5() {
   const r = ergebnis.value;
   const g = geladen.value!.bild;
+  const tk = tx.konturen;
   const unterlage = useBlasseUnterlage();
   const konturen = r?.konturen ?? [];
   const d = useMemo(
@@ -142,41 +203,102 @@ export function Schritt5() {
   );
   const aussen = konturen.filter((k) => k.aussen).length;
   const a = ausschnitt.value;
+  const bild = r?.entrauscht;
+
+  // Ablauf der Animation: Zellen mit Kontur in Lesereihenfolge
+  const zellen = useMemo(() => (a && bild ? zellenImAusschnitt(bild, a.x, a.y, AUSSCHNITT) : []), [a, bild]);
+  const [index, setIndex] = useState(0);
+  const [laeuft, setLaeuft] = useState(false);
+  const [tempo, setTempo] = useState(3);
+  useEffect(() => {
+    setIndex(zellen.length ? 1 : 0);
+    setLaeuft(false);
+  }, [zellen]);
+  useEffect(() => {
+    if (!laeuft) return;
+    const id = setInterval(() => setIndex((i) => (i < zellen.length ? i + 1 : i)), 1000 / tempo);
+    return () => clearInterval(id);
+  }, [laeuft, tempo, zellen.length]);
+  useEffect(() => {
+    if (index >= zellen.length) setLaeuft(false);
+  }, [index, zellen.length]);
+  const aktuell = zellen[index - 1];
+
+  const bildansicht = (
+    <Bildansicht
+      key={a ? 'geteilt' : 'ganz'}
+      breite={g.breite}
+      hoehe={g.hoehe}
+      bild={unterlage}
+      onKlick={(x, y) =>
+        (ausschnitt.value = {
+          x: Math.max(0, Math.min(g.breite - AUSSCHNITT, Math.round(x - AUSSCHNITT / 2))),
+          y: Math.max(0, Math.min(g.hoehe - AUSSCHNITT, Math.round(y - AUSSCHNITT / 2))),
+        })
+      }
+      ueberlagerung={(linie) => (
+        <>
+          <path d={d.aussen} class="kontur-aussen" stroke-width={linie} />
+          <path d={d.innen} class="kontur-innen" stroke-width={linie} />
+          {a && <rect x={a.x} y={a.y} width={AUSSCHNITT} height={AUSSCHNITT} class="ausschnitt" stroke-width={linie * 1.5} />}
+        </>
+      )}
+    />
+  );
+
   return (
     <Schrittansicht
       haupt={
-        <Bildansicht
-          breite={g.breite}
-          hoehe={g.hoehe}
-          bild={unterlage}
-          onKlick={(x, y) =>
-            (ausschnitt.value = {
-              x: Math.max(0, Math.min(g.breite - AUSSCHNITT, x - AUSSCHNITT / 2)),
-              y: Math.max(0, Math.min(g.hoehe - AUSSCHNITT, y - AUSSCHNITT / 2)),
-            })
-          }
-          ueberlagerung={(linie) => (
-            <>
-              <path d={d.aussen} class="kontur-aussen" stroke-width={linie} />
-              <path d={d.innen} class="kontur-innen" stroke-width={linie} />
-              {a && <rect x={a.x} y={a.y} width={AUSSCHNITT} height={AUSSCHNITT} class="ausschnitt" stroke-width={linie} />}
-            </>
-          )}
-        />
+        a && bild ? (
+          <div class="ms-teilung">
+            <div class="ms-uebersicht">{bildansicht}</div>
+            <div class="ms-lupenbereich">
+              <p class="klein">{tk.ausschnittInfo(a.x, a.y, AUSSCHNITT)}</p>
+              <Lupe bild={bild} x0={a.x} y0={a.y} zellen={zellen} index={index} />
+              <p class="legende klein">
+                <span class="farbfeld zelle" /> {tk.legendeZelle} <span class="farbfeld eckpixel" /> {tk.legendeEckpixel}
+              </p>
+            </div>
+          </div>
+        ) : (
+          bildansicht
+        )
       }
       seite={
         <>
           <Kasten>
-            <p data-testid="konturen">{tx.konturen.anzahl(aussen, konturen.length - aussen, r?.punkteRoh ?? 0)}</p>
+            <p data-testid="konturen">{tk.anzahl(aussen, konturen.length - aussen, r?.punkteRoh ?? 0)}</p>
             <p class="legende">
-              <span class="farbfeld aussen" /> {tx.konturen.legendeAussen} <span class="farbfeld innen" /> {tx.konturen.legendeInnen}
+              <span class="farbfeld aussen" /> {tk.legendeAussen} <span class="farbfeld innen" /> {tk.legendeInnen}
             </p>
             <button onClick={() => speichereJson(konturen, 'schritt5-konturen.json')}>{tx.alsJson}</button>
           </Kasten>
-          <Kasten titel={tx.konturen.animation}>
-            {a && r?.entrauscht ? <Animation bild={r.entrauscht} x0={a.x} y0={a.y} /> : <p class="klein">{tx.konturen.animationHinweis}</p>}
+          <Kasten titel={tk.animation}>
+            {!a || !bild ? (
+              <p class="klein">{tk.animationHinweis}</p>
+            ) : (
+              <>
+                {aktuell ? <Zellnahaufnahme bild={bild} zelle={aktuell} /> : <p class="klein">{tk.keineKontur}</p>}
+                <p class="klein">{index >= zellen.length && zellen.length > 0 ? tk.fertig : tk.fortschritt(index, zellen.length)}</p>
+                <div class="knoepfe">
+                  <button onClick={() => setLaeuft(!laeuft)} disabled={index >= zellen.length}>
+                    {laeuft ? tk.pause : tk.start}
+                  </button>
+                  <button onClick={() => setIndex((i) => Math.min(zellen.length, i + 1))} disabled={laeuft || index >= zellen.length}>
+                    {tk.schritt}
+                  </button>
+                  <button onClick={() => setIndex(zellen.length ? 1 : 0)}>{tk.neuStart}</button>
+                  <button onClick={() => (ausschnitt.value = null)}>{tk.schliessen}</button>
+                </div>
+                <Regler label={tk.tempo} wert={tempo} min={1} max={30} onChange={setTempo} />
+              </>
+            )}
           </Kasten>
-          <Erklaerung absaetze={tx.konturen.erklaerung} />
+          <Kasten titel={tk.tabelleTitel}>
+            <Falltabelle aktuell={aktuell?.fall} />
+            <p class="klein">{tk.tabelleHinweis}</p>
+          </Kasten>
+          <Erklaerung absaetze={tk.erklaerung} />
         </>
       }
     />
